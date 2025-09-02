@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function DangKyPage() {
@@ -12,11 +13,13 @@ export default function DangKyPage() {
   const [storeName, setStoreName] = useState("");
   const [storeAddress, setStoreAddress] = useState("");
   const [message, setMessage] = useState("");
+  const router = useRouter();
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
-      setMessage("Passwords do not match!");
+      setMessage("Mật khẩu không khớp!");
       return;
     }
 
@@ -30,17 +33,23 @@ export default function DangKyPage() {
       store_name: role === "Seller" ? storeName : "",
     };
 
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await fetch("/api/auth/dangky", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      setMessage("Đăng ký thành công! Hãy đăng nhập.");
-    } else {
-      setMessage(data.error || "Đăng ký thất bại");
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Đăng ký thành công! Hãy đăng nhập.");
+        router.push("/dangnhap"); // 👉 chuyển trang
+      } else {
+        setMessage(data.message || data.error || "Đăng ký thất bại");
+      }
+    } catch (err) {
+      setMessage("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
 
@@ -48,7 +57,6 @@ export default function DangKyPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg p-8 rounded-lg w-96 text-center border text-black">
         {/* Logo */}
-
         <div className="flex items-center justify-start mb-6">
           <a href="/home">
             <Image src="/logo.png" alt="OBG Logo" width={70} height={60} />

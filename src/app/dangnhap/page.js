@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function DangNhapPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -18,10 +20,17 @@ export default function DangNhapPage() {
 
     const data = await res.json();
     if (res.ok) {
+      // Lưu token
+      localStorage.setItem("token", data.token);
+
       setMessage("Đăng nhập thành công!");
       console.log("User:", data.user);
+
+      setTimeout(() => {
+        router.push("/home2");
+      }, 1000);
     } else {
-      setMessage(data.error);
+      setMessage(data.message || data.error || "Đăng nhập thất bại");
     }
   };
 
@@ -64,7 +73,15 @@ export default function DangNhapPage() {
         </form>
 
         {/* Thông báo */}
-        {message && <p className="mt-4 text-red-500">{message}</p>}
+        {message && (
+          <p
+            className={`mt-4 ${
+              message.includes("thành công") ? "text-green-600" : "text-red-500"
+            }`}
+          >
+            {message}
+          </p>
+        )}
 
         {/* Links */}
         <p className="text-sm text-gray-500 mt-4">

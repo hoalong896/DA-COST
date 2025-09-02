@@ -1,38 +1,46 @@
 import { NextResponse } from "next/server";
-//import { pool } from "@/lib/db";
-import bcrypt from "bcrypt";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
+const prisma = new PrismaClient();
+const SECRET_KEY = "your_secret_key";
 
 export async function POST(req) {
   try {
     const { email, password } = await req.json();
 
-    // Lấy user theo email
-    const [rows] = await pool.query(
-      "SELECT * FROM nguoi_dung WHERE email = ?",
-      [email]
-    );
-    if (rows.length === 0) {
+    // Tìm user theo email
+    const user = await prisma.nguoi_dung.findUnique({ where: { email } });
+    if (!user) {
       return NextResponse.json(
-        { error: "Email không tồn tại" },
+        { error: "Sai email hoặc mật khẩu" },
         { status: 400 }
       );
     }
 
-    const user = rows[0];
-
-    // So sánh mật khẩu
-    const isMatch = await bcrypt.compare(password, user.mat_khau);
-    if (!isMatch) {
+    // Kiểm tra mật khẩu
+    const isPasswordValid = await bcrypt.compare(password, user.mat_khau);
+    if (!isPasswordValid) {
       return NextResponse.json(
-        { error: "Mật khẩu không đúng" },
-        { status: 401 }
+        { error: "Sai email hoặc mật khẩu" },
+        { status: 400 }
       );
     }
 
+    // Tạo JWT token (ép BigInt sang string)
+    const token = jwt.sign(
+      { userId: user.ma_nguoi_dung.toString() },
+      SECRET_KEY,
+      { expiresIn: "1d" }
+    );
+
+    // Trả về thông tin user (ép BigInt sang string nếu có)
     return NextResponse.json({
       message: "Đăng nhập thành công",
+      token,
       user: {
-        id: user.ma_nguoi_dung,
+        id: user.ma_nguoi_dung.toString(),
         ho_ten: user.ho_ten,
         email: user.email,
         vai_tro: user.vai_tro,
