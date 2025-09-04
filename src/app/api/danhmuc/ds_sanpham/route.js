@@ -1,4 +1,3 @@
-// src/app/api/danhmuc/route.js
 import { NextResponse } from "next/server";
 
 const categories = [
@@ -9,7 +8,6 @@ const categories = [
   { id: 5, name: "Đồ gia dụng" },
 ];
 
-// GET /api/danhmuc
 export async function GET() {
   return NextResponse.json(categories);
 }

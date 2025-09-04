@@ -7,30 +7,42 @@ export default function DangNhapPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [successLoading, setSuccessLoading] = useState(false); // loading sau khi login thành công
   const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setMessage("");
 
-    const res = await fetch("/api/auth/dangnhap", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch("/api/auth/dangnhap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      // Lưu token
-      localStorage.setItem("token", data.token);
+      const data = await res.json();
 
-      setMessage("Đăng nhập thành công!");
-      console.log("User:", data.user);
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        setMessage(" Đăng nhập thành công!");
+        console.log("User:", data.user);
 
-      setTimeout(() => {
-        router.push("/home2");
-      }, 1000);
-    } else {
-      setMessage(data.message || data.error || "Đăng nhập thất bại");
+        setSuccessLoading(true);
+
+        setTimeout(() => {
+          router.push("/home2");
+        }, 1500);
+      } else {
+        setMessage(data.message || data.error || "❌ Đăng nhập thất bại");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setMessage(" Lỗi kết nối server. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,32 +60,39 @@ export default function DangNhapPage() {
         <h2 className="text-xl font-semibold mb-4 text-yellow-700">LOGIN</h2>
         <p className="text-sm text-black mb-6">Sign in to your account</p>
 
-        {/* Form */}
-        <form onSubmit={handleLogin} className="space-y-4 text-left">
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full px-4 py-2 border rounded-md"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full px-4 py-2 border rounded-md"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="w-full bg-yellow-700 text-white py-2 rounded-md font-semibold"
-          >
-            Login
-          </button>
-        </form>
+        {successLoading ? (
+          <p className="text-yellow-700 font-semibold">Đang chuyển hướng...</p>
+        ) : (
+          <form onSubmit={handleLogin} className="space-y-4 text-left">
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full px-4 py-2 border border-black rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-700"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full px-4 py-2 border border-black rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-700"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+
+            <button
+              type="submit"
+              className="w-full bg-yellow-700 text-white py-2 rounded-md font-semibold disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading ? "Đang xử lý..." : "Login"}
+            </button>
+          </form>
+        )}
 
         {/* Thông báo */}
-        {message && (
+        {message && !successLoading && (
           <p
             className={`mt-4 ${
               message.includes("thành công") ? "text-green-600" : "text-red-500"
@@ -84,18 +103,26 @@ export default function DangNhapPage() {
         )}
 
         {/* Links */}
-        <p className="text-sm text-gray-500 mt-4">
-          I forgot my password.{" "}
-          <a href="#" className="text-yellow-700">
-            Click here
-          </a>{" "}
-          to reset.
-        </p>
-        <p className="text-sm text-gray-500 mt-2">
-          <a href="/dangky" className="text-gray-700 font-semibold">
-            Register new account
-          </a>
-        </p>
+        {!successLoading && (
+          <>
+            <p className="text-sm text-gray-500 mt-4">
+              I forgot my password.{" "}
+              <a
+                href="/profile/forgot-password"
+                className="text-yellow-700 hover:underline"
+              >
+                Click here
+              </a>{" "}
+              to reset.
+            </p>
+
+            <p className="text-sm text-gray-500 mt-2">
+              <a href="/dangky" className="text-gray-700 font-semibold">
+                Register new account
+              </a>
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

@@ -4,49 +4,53 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
-const SECRET_KEY = "your_secret_key";
 
 export async function POST(req) {
   try {
     const { email, password } = await req.json();
 
-    // Tìm user theo email
+    if (!email || !password) {
+      return NextResponse.json(
+        { message: "Vui lòng nhập email và mật khẩu" },
+        { status: 400 }
+      );
+    }
+
     const user = await prisma.nguoi_dung.findUnique({ where: { email } });
     if (!user) {
       return NextResponse.json(
-        { error: "Sai email hoặc mật khẩu" },
+        { message: "Sai email hoặc mật khẩu" },
         { status: 400 }
       );
     }
 
-    // Kiểm tra mật khẩu
     const isPasswordValid = await bcrypt.compare(password, user.mat_khau);
     if (!isPasswordValid) {
       return NextResponse.json(
-        { error: "Sai email hoặc mật khẩu" },
+        { message: "Sai email hoặc mật khẩu" },
         { status: 400 }
       );
     }
 
-    // Tạo JWT token (ép BigInt sang string)
-    const token = jwt.sign(
-      { userId: user.ma_nguoi_dung.toString() },
-      SECRET_KEY,
-      { expiresIn: "1d" }
-    );
+    const token = jwt.sign({ id: user.ma_nguoi_dung }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
-    // Trả về thông tin user (ép BigInt sang string nếu có)
     return NextResponse.json({
       message: "Đăng nhập thành công",
       token,
       user: {
-        id: user.ma_nguoi_dung.toString(),
+        id: user.ma_nguoi_dung,
         ho_ten: user.ho_ten,
         email: user.email,
+        so_dien_thoai: user.so_dien_thoai,
+        dia_chi: user.dia_chi,
         vai_tro: user.vai_tro,
+        avatar: user.avatar,
       },
     });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Lỗi đăng nhập:", error);
+    return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
   }
 }

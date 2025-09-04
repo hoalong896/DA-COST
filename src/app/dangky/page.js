@@ -4,12 +4,13 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function DangKyPage() {
-  const [role, setRole] = useState("Buyer");
+  const [role, setRole] = useState("KHACH");
   const [hoTen, setHoTen] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
   const [storeName, setStoreName] = useState("");
   const [storeAddress, setStoreAddress] = useState("");
   const [message, setMessage] = useState("");
@@ -27,10 +28,11 @@ export default function DangKyPage() {
       ho_ten: hoTen,
       email,
       mat_khau: password,
-      vai_tro: role === "Buyer" ? "NguoiMua" : "NguoiBan",
+      vai_tro: role,
       so_dien_thoai: phone,
-      dia_chi: role === "Seller" ? storeAddress : "",
-      store_name: role === "Seller" ? storeName : "",
+      dia_chi: address,
+      store_name: role === "NGUOI_BAN" ? storeName : "",
+      store_address: role === "NGUOI_BAN" ? storeAddress : "",
     };
 
     try {
@@ -44,7 +46,7 @@ export default function DangKyPage() {
 
       if (res.ok) {
         alert("Đăng ký thành công! Hãy đăng nhập.");
-        router.push("/dangnhap"); // 👉 chuyển trang
+        router.push("/dangnhap");
       } else {
         setMessage(data.message || data.error || "Đăng ký thất bại");
       }
@@ -72,9 +74,9 @@ export default function DangKyPage() {
             <input
               type="radio"
               name="role"
-              value="Buyer"
-              checked={role === "Buyer"}
-              onChange={() => setRole("Buyer")}
+              value="KHACH"
+              checked={role === "KHACH"}
+              onChange={() => setRole("KHACH")}
             />
             <span>Buyer</span>
           </label>
@@ -82,9 +84,9 @@ export default function DangKyPage() {
             <input
               type="radio"
               name="role"
-              value="Seller"
-              checked={role === "Seller"}
-              onChange={() => setRole("Seller")}
+              value="NGUOI_BAN"
+              checked={role === "NGUOI_BAN"}
+              onChange={() => setRole("NGUOI_BAN")}
             />
             <span>Seller</span>
           </label>
@@ -132,8 +134,16 @@ export default function DangKyPage() {
             className="w-full px-4 py-2 border rounded-md"
             required
           />
+          <input
+            type="text"
+            placeholder="Address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className="w-full px-4 py-2 border rounded-md"
+            required
+          />
 
-          {role === "Seller" && (
+          {role === "NGUOI_BAN" && (
             <>
               <input
                 type="text"

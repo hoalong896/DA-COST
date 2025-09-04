@@ -3,227 +3,169 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-model nguoi_dung {
-  ma_nguoi_dung BigInt   @id @default(autoincrement())
-  ho_ten        String
-  email         String   @unique
-  mat_khau      String
-  vai_tro       VaiTro   @default(Khach)
-  dia_chi       String?
-  so_dien_thoai String?
-  trang_thai    Boolean  @default(true)
-  ngay_tao      DateTime @default(now())
-  ngay_cap_nhat DateTime @updatedAt
-
-  // Quan hệ
-  san_pham_ban  san_pham[]               @relation("NguoiBan")
-  gio_hang      gio_hang[]
-  don_hang      don_hang[]
-  danh_gia      danh_gia[]
-  bao_cao       bao_cao[]
-  cau_hoi       cau_hoi[]
-  nhat_ky_duyet nhat_ky_duyet_san_pham[] @relation("AdminDuyet")
-
-  // Quan hệ ngược lại cho chi_tiet_don_hang.nguoi_ban
-  chi_tiet_don_hang chi_tiet_don_hang[] @relation("NguoiBanChiTiet")
-}
-
-model danh_muc {
-  ma_danh_muc  BigInt   @id @default(autoincrement())
-  ten_danh_muc String
-  mo_ta        String?
-  hien_thi     Boolean  @default(true)
-  ngay_tao     DateTime @default(now())
-
-  san_pham san_pham[]
-}
-
-model san_pham {
-  ma_san_pham      BigInt           @id @default(autoincrement())
-  ten_san_pham     String
-  mo_ta            String?
-  gia              Decimal
-  so_luong_ton     Int              @default(0)
-  ma_nguoi_ban     BigInt
-  ma_danh_muc      BigInt
-  duyet_trang_thai TrangThaiSanPham @default(ChoDuyet)
-  ngay_dang        DateTime         @default(now())
-  ngay_cap_nhat    DateTime         @updatedAt
-
-  nguoi_ban         nguoi_dung               @relation("NguoiBan", fields: [ma_nguoi_ban], references: [ma_nguoi_dung])
-  danh_muc          danh_muc                 @relation(fields: [ma_danh_muc], references: [ma_danh_muc])
-  anh               san_pham_anh[]
-  chi_tiet_gio_hang chi_tiet_gio_hang[]
-  chi_tiet_don_hang chi_tiet_don_hang[]
-  danh_gia          danh_gia[]
-  bao_cao           bao_cao[]
-  cau_hoi           cau_hoi[]
-  nhat_ky_duyet     nhat_ky_duyet_san_pham[]
-}
-
-model san_pham_anh {
-  ma_anh       BigInt   @id @default(autoincrement())
-  ma_san_pham  BigInt
-  url          String
-  la_anh_chinh Boolean  @default(false)
-  thu_tu       Int?     @default(0)
-  ngay_tao     DateTime @default(now())
-
-  san_pham san_pham @relation(fields: [ma_san_pham], references: [ma_san_pham])
-}
-
-model gio_hang {
-  ma_gio_hang  BigInt   @id @default(autoincrement())
-  ma_nguoi_mua BigInt
-  ngay_tao     DateTime @default(now())
-
-  nguoi_mua nguoi_dung          @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung])
-  chi_tiet  chi_tiet_gio_hang[]
-}
-
-model chi_tiet_gio_hang {
-  ma_ct       BigInt   @id @default(autoincrement())
-  ma_gio_hang BigInt
-  ma_san_pham BigInt
-  so_luong    Int
-  ngay_tao    DateTime @default(now())
-
-  gio_hang gio_hang @relation(fields: [ma_gio_hang], references: [ma_gio_hang])
-  san_pham san_pham @relation(fields: [ma_san_pham], references: [ma_san_pham])
-}
-
-model chi_tiet_don_hang {
-  ma_ct        BigInt  @id @default(autoincrement())
-  ma_don_hang  BigInt
-  ma_san_pham  BigInt
-  so_luong     Int
-  don_gia      Decimal
-  thanh_tien   Decimal
-  ma_nguoi_ban BigInt
-
-  don_hang  don_hang   @relation(fields: [ma_don_hang], references: [ma_don_hang])
-  san_pham  san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham])
-  nguoi_ban nguoi_dung @relation("NguoiBanChiTiet", fields: [ma_nguoi_ban], references: [ma_nguoi_dung])
-}
-
-model don_hang {
-  ma_don_hang   BigInt           @id @default(autoincrement())
-  ma_nguoi_mua  BigInt
-  tong_tien     Decimal          @default(0.0)
-  trang_thai    TrangThaiDonHang @default(ChoXacNhan)
-  ngay_dat      DateTime         @default(now())
-  ngay_cap_nhat DateTime         @updatedAt
-
-  nguoi_mua  nguoi_dung          @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung])
-  chi_tiet   chi_tiet_don_hang[]
-  thanh_toan thanh_toan[]
-}
-
-model thanh_toan {
-  ma_thanh_toan BigInt              @id @default(autoincrement())
-  ma_don_hang   BigInt
-  so_tien       Decimal
-  phuong_thuc   PhuongThucThanhToan
-  trang_thai    TrangThaiThanhToan  @default(ChoXuLy)
-  ngay_tao      DateTime            @default(now())
-
-  don_hang don_hang @relation(fields: [ma_don_hang], references: [ma_don_hang])
-}
-
-model danh_gia {
-  ma_danh_gia   BigInt   @id @default(autoincrement())
-  ma_san_pham   BigInt
-  ma_nguoi_mua  BigInt
-  so_sao        Int
-  noi_dung      String?
-  ngay_danh_gia DateTime @default(now())
-
-  san_pham  san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham])
-  nguoi_mua nguoi_dung @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung])
-}
-
 model bao_cao {
-  ma_bao_cao    BigInt          @id @default(autoincrement())
-  ma_san_pham   BigInt
-  ma_nguoi_dung BigInt
+  ma_bao_cao    Int        @id @default(autoincrement())
+  ma_san_pham   Int
+  ma_nguoi_dung Int
   ly_do         String
-  trang_thai    TrangThaiBaoCao @default(ChuaXuLy)
-  ngay_tao      DateTime        @default(now())
-
-  san_pham   san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham])
-  nguoi_dung nguoi_dung @relation(fields: [ma_nguoi_dung], references: [ma_nguoi_dung])
+  trang_thai    String?    @default("ChuaXuLy")
+  ngay_tao      DateTime?  @default(now())
+  nguoi_dung    nguoi_dung @relation(fields: [ma_nguoi_dung], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
+  san_pham      san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model cau_hoi {
-  ma_cau_hoi   BigInt    @id @default(autoincrement())
-  ma_san_pham  BigInt
-  ma_nguoi_mua BigInt
+  ma_cau_hoi   Int        @id @default(autoincrement())
+  ma_san_pham  Int
+  ma_nguoi_mua Int
   cau_hoi      String
   tra_loi      String?
-  ngay_hoi     DateTime  @default(now())
+  ngay_hoi     DateTime?  @default(now())
   ngay_tra_loi DateTime?
+  nguoi_dung   nguoi_dung @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
+  san_pham     san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
+}
 
-  san_pham  san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham])
-  nguoi_mua nguoi_dung @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung])
+model chi_tiet_don_hang {
+  ma_ct        Int        @id @default(autoincrement())
+  ma_don_hang  Int
+  ma_san_pham  Int
+  so_luong     Int
+  don_gia      Float
+  thanh_tien   Float
+  ma_nguoi_ban Int
+  nguoi_dung   nguoi_dung @relation(fields: [ma_nguoi_ban], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
+  san_pham     san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
+  don_hang     don_hang   @relation(fields: [ma_don_hang], references: [ma_don_hang], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model chi_tiet_gio_hang {
+  ma_ct       Int       @id @default(autoincrement())
+  ma_gio_hang Int
+  ma_san_pham Int
+  so_luong    Int
+  ngay_tao    DateTime? @default(now())
+  san_pham    san_pham  @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
+  gio_hang    gio_hang  @relation(fields: [ma_gio_hang], references: [ma_gio_hang], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model danh_gia {
+  ma_danh_gia   Int        @id @default(autoincrement())
+  ma_san_pham   Int
+  ma_nguoi_mua  Int
+  so_sao        Int
+  noi_dung      String?
+  ngay_danh_gia DateTime?  @default(now())
+  nguoi_dung    nguoi_dung @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
+  san_pham      san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model danh_muc {
+  ma_danh_muc  Int        @id @default(autoincrement())
+  ten_danh_muc String
+  mo_ta        String?
+  hien_thi     Boolean?   @default(true)
+  ngay_tao     DateTime?  @default(now())
+  san_pham     san_pham[]
+}
+
+model don_hang {
+  ma_don_hang       Int                 @id @default(autoincrement())
+  ma_nguoi_mua      Int
+  tong_tien         Float?              @default(0.0)
+  trang_thai        String?             @default("ChoXacNhan")
+  ngay_dat          DateTime?           @default(now())
+  ngay_cap_nhat     DateTime?           @default(now())
+  chi_tiet_don_hang chi_tiet_don_hang[]
+  nguoi_dung        nguoi_dung          @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
+  thanh_toan        thanh_toan[]
+}
+
+model gio_hang {
+  ma_gio_hang       Int                 @id @default(autoincrement())
+  ma_nguoi_mua      Int
+  ngay_tao          DateTime?           @default(now())
+  chi_tiet_gio_hang chi_tiet_gio_hang[]
+  nguoi_dung        nguoi_dung          @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model nguoi_dung {
+  ma_nguoi_dung          Int       @id @default(autoincrement())
+  ho_ten                 String
+  email                  String    @unique
+  mat_khau               String
+  vai_tro                String?   @default("Khach")
+  dia_chi                String?
+  so_dien_thoai          String?
+  trang_thai             Boolean?  @default(true)
+  ngay_tao               DateTime? @default(now())
+  ngay_cap_nhat          DateTime? @default(now())
+  resetPasswordToken     String?
+  resetPasswordExpire    DateTime?
+  avatar                 String?
+  bao_cao                bao_cao[]
+  cau_hoi                cau_hoi[]
+  chi_tiet_don_hang      chi_tiet_don_hang[]
+  danh_gia               danh_gia[]
+  don_hang               don_hang[]
+  gio_hang               gio_hang[]
+  nhat_ky_duyet_san_pham nhat_ky_duyet_san_pham[]
+  san_pham               san_pham[]
 }
 
 model nhat_ky_duyet_san_pham {
-  ma_nhat_ky    BigInt   @id @default(autoincrement())
-  ma_san_pham   BigInt
-  hanh_dong     HanhDong
+  ma_nhat_ky    Int        @id @default(autoincrement())
+  ma_san_pham   Int
+  hanh_dong     String
   ly_do         String?
-  thuc_hien_boi BigInt
-  thuc_hien_luc DateTime @default(now())
-
-  san_pham san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham])
-  admin    nguoi_dung @relation("AdminDuyet", fields: [thuc_hien_boi], references: [ma_nguoi_dung])
+  thuc_hien_boi Int
+  thuc_hien_luc DateTime?  @default(now())
+  nguoi_dung    nguoi_dung @relation(fields: [thuc_hien_boi], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
+  san_pham      san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
 }
 
-enum VaiTro {
-  Khach
-  NguoiMua
-  NguoiBan
-  Admin
+model san_pham {
+  ma_san_pham            Int                      @id @default(autoincrement())
+  ten_san_pham           String
+  mo_ta                  String?
+  gia                    Float
+  so_luong_ton           Int?                     @default(0)
+  ma_nguoi_ban           Int
+  ma_danh_muc            Int
+  duyet_trang_thai       String?                  @default("ChoDuyet")
+  ngay_dang              DateTime?                @default(now())
+  ngay_cap_nhat          DateTime?                @default(now())
+  bao_cao                bao_cao[]
+  cau_hoi                cau_hoi[]
+  chi_tiet_don_hang      chi_tiet_don_hang[]
+  chi_tiet_gio_hang      chi_tiet_gio_hang[]
+  danh_gia               danh_gia[]
+  nhat_ky_duyet_san_pham nhat_ky_duyet_san_pham[]
+  danh_muc               danh_muc                 @relation(fields: [ma_danh_muc], references: [ma_danh_muc], onDelete: NoAction, onUpdate: NoAction)
+  nguoi_dung             nguoi_dung               @relation(fields: [ma_nguoi_ban], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
+  san_pham_anh           san_pham_anh[]
 }
 
-enum TrangThaiSanPham {
-  ChoDuyet
-  DaDuyet
-  TuChoi
+model san_pham_anh {
+  ma_anh       Int       @id @default(autoincrement())
+  ma_san_pham  Int
+  url          String
+  la_anh_chinh Boolean?  @default(false)
+  thu_tu       Int?      @default(0)
+  ngay_tao     DateTime? @default(now())
+  san_pham     san_pham  @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
 }
 
-enum TrangThaiDonHang {
-  ChoXacNhan
-  DaThanhToan
-  DangGiao
-  HoanThanh
-  Huy
-}
-
-enum PhuongThucThanhToan {
-  COD
-  ChuyenKhoan
-  ViDienTu
-  The
-}
-
-enum TrangThaiThanhToan {
-  ChoXuLy
-  ThanhCong
-  ThatBai
-  HoanTien
-}
-
-enum TrangThaiBaoCao {
-  ChuaXuLy
-  DaXuLy
-}
-
-enum HanhDong {
-  Duyet
-  TuChoi
+model thanh_toan {
+  ma_thanh_toan Int       @id @default(autoincrement())
+  ma_don_hang   Int
+  so_tien       Float
+  phuong_thuc   String
+  trang_thai    String?   @default("ChoXuLy")
+  ngay_tao      DateTime? @default(now())
+  don_hang      don_hang  @relation(fields: [ma_don_hang], references: [ma_don_hang], onDelete: NoAction, onUpdate: NoAction)
 }

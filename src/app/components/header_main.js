@@ -1,19 +1,19 @@
 "use client";
 import { Search, ShoppingCart, User } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Header() {
   return (
-    <header className="flex items-center justify-between px-6 py-4 bg-purple-300 shadow-md">
+    <header className="flex items-center justify-between px-6 py-4 bg-purple-300 shadow-md relative">
       {/* Logo */}
-      <div className="flex items-center space-x-2">
-        <a href="/home2">
-          {" "}
-          <Image src="/logo.png" alt="OBG Logo" width={50} height={50} />
-        </a>
-      </div>
+      <Link
+        href="/home2"
+        className="flex items-center space-x-2 cursor-pointer"
+      >
+        <Image src="/logo.png" alt="OBG Logo" width={50} height={50} />
+      </Link>
 
-      {/* Search bar */}
       <div className="flex-1 mx-6 flex items-center">
         <input
           type="text"
@@ -27,20 +27,21 @@ export default function Header() {
 
       {/* Actions */}
       <div className="flex items-center space-x-4">
-        <a
+        <Link
           href="/cart"
           className="flex items-center space-x-1 bg-pink-300 px-3 py-2 rounded-md hover:bg-pink-400"
         >
           <ShoppingCart size={20} />
           <span>Giỏ hàng</span>
-        </a>
-        <a
-          href="/account"
+        </Link>
+
+        <Link
+          href="/profile"
           className="flex items-center space-x-1 bg-gray-200 px-3 py-2 rounded-md hover:bg-gray-300"
         >
           <User size={20} />
           <span>Tài khoản</span>
-        </a>
+        </Link>
       </div>
     </header>
   );
