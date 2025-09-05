@@ -1,18 +1,40 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
 
 const prisma = new PrismaClient();
-const SECRET_KEY = process.env.JWT_SECRET || "default_secret_key";
-async function getUserFromToken() {
-  try {
-    const token = cookies().get("token")?.value;
-    if (!token) return null;
+const SECRET_KEY = process.env.JWT_SECRET || "123456";
 
+// 🔑 Middleware giải mã token
+async function getUserFromToken(req) {
+  try {
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return null;
+    }
+
+    const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, SECRET_KEY);
+    return decoded; // { id: ... }
+  } catch (err) {
+    console.error("JWT verify error:", err);
+    return null;
+  }
+}
+
+// 📌 Lấy thông tin user
+export async function GET(req) {
+  try {
+    const decoded = await getUserFromToken(req);
+    if (!decoded) {
+      return NextResponse.json(
+        { message: "Token không hợp lệ!" },
+        { status: 401 }
+      );
+    }
+
     const user = await prisma.nguoi_dung.findUnique({
-      where: { ma_nguoi_dung: parseInt(decoded.userId) },
+      where: { ma_nguoi_dung: decoded.id },
       select: {
         ma_nguoi_dung: true,
         ho_ten: true,
@@ -23,42 +45,50 @@ async function getUserFromToken() {
         avatar: true,
       },
     });
-    return user;
+
+    if (!user) {
+      return NextResponse.json(
+        { message: "Không tìm thấy user" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ user });
   } catch (err) {
-    console.error("Lỗi xác thực token:", err);
-    return null;
+    console.error("GET profile error:", err);
+    return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
   }
 }
 
-// GET: lấy hồ sơ user
-export async function GET() {
-  const user = await getUserFromToken();
-  if (!user) {
-    return NextResponse.json(
-      { message: "Không tìm thấy user" },
-      { status: 404 }
-    );
-  }
-  return NextResponse.json({ user });
-}
-
-// PUT: cập nhật hồ sơ
+// 📌 Cập nhật thông tin user
 export async function PUT(req) {
-  const user = await getUserFromToken();
-  if (!user) {
-    return NextResponse.json({ message: "Chưa đăng nhập" }, { status: 401 });
-  }
-
   try {
+    const decoded = await getUserFromToken(req);
+    if (!decoded) {
+      return NextResponse.json(
+        { message: "Token không hợp lệ!" },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
 
     const updatedUser = await prisma.nguoi_dung.update({
-      where: { ma_nguoi_dung: user.ma_nguoi_dung },
+      where: { ma_nguoi_dung: decoded.id },
       data: {
-        ho_ten: body.ho_ten ?? user.ho_ten,
-        so_dien_thoai: body.so_dien_thoai ?? user.so_dien_thoai,
-        dia_chi: body.dia_chi ?? user.dia_chi,
-        avatar: body.avatar ?? user.avatar,
+        ho_ten: body.ho_ten,
+        so_dien_thoai: body.so_dien_thoai,
+        dia_chi: body.dia_chi,
+        avatar: body.avatar,
+      },
+      select: {
+        ma_nguoi_dung: true,
+        ho_ten: true,
+        email: true,
+        so_dien_thoai: true,
+        dia_chi: true,
+        vai_tro: true,
+        avatar: true,
       },
     });
 
@@ -67,7 +97,7 @@ export async function PUT(req) {
       user: updatedUser,
     });
   } catch (err) {
-    console.error("Lỗi cập nhật:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error("PUT profile error:", err);
+    return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
   }
 }

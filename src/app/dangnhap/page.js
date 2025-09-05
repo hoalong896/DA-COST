@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-
+import { useLoading } from "../components/LoadingProvider";
 export default function DangNhapPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -10,6 +10,7 @@ export default function DangNhapPage() {
   const [loading, setLoading] = useState(false);
   const [successLoading, setSuccessLoading] = useState(false); // loading sau khi login thành công
   const router = useRouter();
+  const { setIsLoading } = useLoading();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -27,16 +28,19 @@ export default function DangNhapPage() {
 
       if (res.ok) {
         localStorage.setItem("token", data.token);
-        setMessage(" Đăng nhập thành công!");
-        console.log("User:", data.user);
-
+        localStorage.setItem("role", data.user.vai_tro);
+        setMessage("Đăng nhập thành công!");
         setSuccessLoading(true);
 
         setTimeout(() => {
-          router.push("/home2");
+          if (data.user.vai_tro === "Admin") {
+            router.push("/admin/home");
+          } else {
+            router.push("/home2");
+          }
         }, 1500);
       } else {
-        setMessage(data.message || data.error || "❌ Đăng nhập thất bại");
+        setMessage(data.message || data.error || " Đăng nhập thất bại");
       }
     } catch (err) {
       console.error("Login error:", err);

@@ -32,9 +32,15 @@ export async function POST(req) {
       );
     }
 
-    const token = jwt.sign({ id: user.ma_nguoi_dung }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    // 🔥 Gắn cả role vào token
+    const token = jwt.sign(
+      {
+        id: user.ma_nguoi_dung,
+        role: user.vai_tro, // ví dụ: "admin" hoặc "user"
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
 
     return NextResponse.json({
       message: "Đăng nhập thành công",
