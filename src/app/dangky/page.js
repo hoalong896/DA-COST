@@ -1,22 +1,26 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function DangKyPage() {
-  const [role, setRole] = useState("Buyer");
+  const [role, setRole] = useState("KHACH");
   const [hoTen, setHoTen] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
   const [storeName, setStoreName] = useState("");
   const [storeAddress, setStoreAddress] = useState("");
   const [message, setMessage] = useState("");
+  const router = useRouter();
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
-      setMessage("Passwords do not match!");
+      setMessage("Mật khẩu không khớp!");
       return;
     }
 
@@ -24,23 +28,30 @@ export default function DangKyPage() {
       ho_ten: hoTen,
       email,
       mat_khau: password,
-      vai_tro: role === "Buyer" ? "NguoiMua" : "NguoiBan",
+      vai_tro: role,
       so_dien_thoai: phone,
-      dia_chi: role === "Seller" ? storeAddress : "",
-      store_name: role === "Seller" ? storeName : "",
+      dia_chi: address,
+      store_name: role === "NGUOI_BAN" ? storeName : "",
+      store_address: role === "NGUOI_BAN" ? storeAddress : "",
     };
 
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await fetch("/api/auth/dangky", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      setMessage("Đăng ký thành công! Hãy đăng nhập.");
-    } else {
-      setMessage(data.error || "Đăng ký thất bại");
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Đăng ký thành công! Hãy đăng nhập.");
+        router.push("/dangnhap");
+      } else {
+        setMessage(data.message || data.error || "Đăng ký thất bại");
+      }
+    } catch (err) {
+      setMessage("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
 
@@ -48,7 +59,6 @@ export default function DangKyPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg p-8 rounded-lg w-96 text-center border text-black">
         {/* Logo */}
-
         <div className="flex items-center justify-start mb-6">
           <a href="/home">
             <Image src="/logo.png" alt="OBG Logo" width={70} height={60} />
@@ -64,9 +74,9 @@ export default function DangKyPage() {
             <input
               type="radio"
               name="role"
-              value="Buyer"
-              checked={role === "Buyer"}
-              onChange={() => setRole("Buyer")}
+              value="KHACH"
+              checked={role === "KHACH"}
+              onChange={() => setRole("KHACH")}
             />
             <span>Buyer</span>
           </label>
@@ -74,9 +84,9 @@ export default function DangKyPage() {
             <input
               type="radio"
               name="role"
-              value="Seller"
-              checked={role === "Seller"}
-              onChange={() => setRole("Seller")}
+              value="NGUOI_BAN"
+              checked={role === "NGUOI_BAN"}
+              onChange={() => setRole("NGUOI_BAN")}
             />
             <span>Seller</span>
           </label>
@@ -124,8 +134,16 @@ export default function DangKyPage() {
             className="w-full px-4 py-2 border rounded-md"
             required
           />
+          <input
+            type="text"
+            placeholder="Address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className="w-full px-4 py-2 border rounded-md"
+            required
+          />
 
-          {role === "Seller" && (
+          {role === "NGUOI_BAN" && (
             <>
               <input
                 type="text"
