@@ -92,7 +92,10 @@ export default function ProfilePage() {
         <div>
           <h2 className="text-lg font-semibold mb-6">Quản lý tài khoản</h2>
           <nav className="space-y-4">
-            <a className="flex items-center gap-2 text-gray-700 hover:text-black cursor-pointer">
+            <a
+              className="flex items-center gap-2 text-gray-700 hover:text-black cursor-pointer"
+              href="/home2/shop-cart"
+            >
               <ShoppingCart size={18} /> Giỏ hàng
             </a>
 
