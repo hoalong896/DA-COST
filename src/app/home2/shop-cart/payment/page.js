@@ -242,6 +242,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+          {/* Nút đặt hàng */}
           <button
             onClick={handleCheckout}
             disabled={loading}
@@ -249,6 +250,22 @@ export default function CheckoutPage() {
           >
             {loading ? "Đang xử lý..." : "ĐẶT HÀNG / THANH TOÁN"}
           </button>
+
+          {/* Nút back & về trang chủ */}
+          <div className="flex gap-3 mt-4">
+            <button
+              onClick={() => router.back()}
+              className="flex-1 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400"
+            >
+              ⬅ Quay lại
+            </button>
+            <button
+              onClick={() => router.push("/home2")}
+              className="flex-1 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+            >
+              🏠 Về trang chủ
+            </button>
+          </div>
         </div>
       </div>
     </div>

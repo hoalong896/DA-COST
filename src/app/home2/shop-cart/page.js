@@ -221,12 +221,22 @@ export default function CartPage() {
           >
             <ArrowLeft size={16} /> Tiếp tục mua
           </button>
+          
           <button
-            className="px-5 py-2 bg-black text-white rounded-lg shadow hover:bg-gray-800 flex items-center gap-2"
+            type="button"
+            onClick={() => {
+              console.log("👉 Clicked Thanh toán");
+              router.push("/home2/shop-cart/payment");
+            }}
+            className={`px-8 py-2 rounded-lg shadow flex items-center gap-2 
+              ${selectedItems.length === 0 
+                ? "bg-gray-400 cursor-not-allowed text-white" 
+                : "bg-black hover:bg-gray-900 text-white"}`}
             disabled={selectedItems.length === 0}
-          >
-            <CheckSquare size={18} /> Thanh toán
+            >
+            <CheckSquare size={16}/> Thanh toán
           </button>
+ 
         </div>
       </div>
     </div>
