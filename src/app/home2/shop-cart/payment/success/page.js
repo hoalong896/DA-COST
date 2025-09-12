@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import OrderSuccess from "@/components/OrderSuccess";
+//import OrderSuccess from "@/components/OrderSuccess";
 
 export default function SuccessPage() {
   const [order, setOrder] = useState(null);
