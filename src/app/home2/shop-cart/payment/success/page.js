@@ -22,3 +22,6 @@
 
 //   return <OrderSuccess order={order} />;
 // }
+export default function SuccessPage() {
+  return <div>Trang Success đang xây dựng...</div>;
+}
