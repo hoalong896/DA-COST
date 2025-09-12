@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Header from "../components/header";
+import Header from "../components/Header";
 import DanhMuc from "../components/danhmuc";
 import DanhSach from "../components/danhsach";
 import Footer from "../components/Footer";
