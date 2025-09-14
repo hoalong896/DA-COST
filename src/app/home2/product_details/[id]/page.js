@@ -22,6 +22,9 @@ export default function ProductDetailsPage() {
     { user: "nguoidung3", rating: 3, comment: "Tạm được, còn cải thiện." },
   ]);
 
+  // State phóng to ảnh
+  const [zoomImage, setZoomImage] = useState(null);
+
   useEffect(() => {
     if (!id) return;
 
@@ -72,13 +75,13 @@ export default function ProductDetailsPage() {
           onClick={() => router.push("/home2")}
           className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
         >
-          ⬅ Thoát
+          Thoát
         </button>
         <button
           onClick={handleReport}
           className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
         >
-          🚨 Báo cáo sản phẩm
+          Báo cáo sản phẩm
         </button>
       </div>
 
@@ -86,11 +89,16 @@ export default function ProductDetailsPage() {
       <div className="bg-gray-100 p-6 rounded-lg shadow">
         <div className="flex gap-6">
           {/* Ảnh sản phẩm */}
-          <div className="w-1/3">
+          <div className="w-1/3 cursor-pointer">
             <img
               src={product.san_pham_anh?.[0]?.url || "/placeholder.png"}
               alt={product.ten_san_pham}
-              className="w-full h-64 object-cover rounded"
+              className="w-full h-64 object-cover rounded hover:scale-105 transition"
+              onClick={() =>
+                setZoomImage(
+                  product.san_pham_anh?.[0]?.url || "/placeholder.png"
+                )
+              }
             />
           </div>
 
@@ -236,6 +244,20 @@ export default function ProductDetailsPage() {
           ))}
         </div>
       </div>
+
+      {/* Modal phóng to ảnh */}
+      {zoomImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          onClick={() => setZoomImage(null)}
+        >
+          <img
+            src={zoomImage}
+            alt="Zoom sản phẩm"
+            className="max-w-4xl max-h-[90vh] rounded shadow-lg"
+          />
+        </div>
+      )}
     </div>
   );
 }

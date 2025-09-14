@@ -1,49 +1,69 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
+    // 🔑 Lấy token từ header
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
-      return NextResponse.json({ message: "Thiếu token" }, { status: 401 });
+      return NextResponse.json({ message: "Chưa đăng nhập" }, { status: 401 });
     }
 
-    let payload;
-    try {
-      payload = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      return NextResponse.json(
-        { message: "Token không hợp lệ" },
-        { status: 403 }
-      );
-    }
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-    const { tong_tien, chi_tiet } = await req.json();
+    // 📌 Lấy dữ liệu từ body
+    const body = await req.json();
+    const { phuong_thuc, tong_tien, chi_tiet, ho_ten, so_dien_thoai, dia_chi } =
+      body;
 
-    if (!tong_tien || !chi_tiet || chi_tiet.length === 0) {
+    if (!tong_tien || !chi_tiet?.length) {
       return NextResponse.json(
-        { message: "Thiếu dữ liệu đơn hàng" },
+        { message: "Dữ liệu không hợp lệ" },
         { status: 400 }
       );
     }
 
+    // 🛒 Tạo đơn hàng
     const donHang = await prisma.don_hang.create({
       data: {
-        ma_nguoi_mua: payload.userId, // lấy từ token
-        tong_tien,
+        tong_tien: Number(tong_tien), // ✅ ép về số
         trang_thai: "ChoXacNhan",
-        chi_tiet_don_hang: {
-          create: chi_tiet.map((ct) => ({
-            ma_san_pham: ct.ma_san_pham,
-            so_luong: ct.so_luong,
-            don_gia: ct.don_gia,
-            thanh_tien: ct.so_luong * ct.don_gia,
-            ma_nguoi_ban: ct.ma_nguoi_ban,
-          })),
+        ma_nguoi_mua: payload.id, // field trong schema
+      },
+    });
+
+    // 📦 Tạo chi tiết đơn hàng
+    for (const sp of chi_tiet) {
+      // ✅ Lấy sản phẩm trong DB để đảm bảo tồn tại + có người bán
+      const sanPham = await prisma.san_pham.findUnique({
+        where: { ma_san_pham: sp.ma_san_pham },
+        select: { ma_nguoi_ban: true, gia: true },
+      });
+
+      if (!sanPham) {
+        throw new Error(`Sản phẩm ${sp.ma_san_pham} không tồn tại`);
+      }
+
+      await prisma.chi_tiet_don_hang.create({
+        data: {
+          ma_don_hang: donHang.ma_don_hang,
+          ma_san_pham: sp.ma_san_pham,
+          so_luong: sp.so_luong,
+          don_gia: sp.don_gia ?? sanPham.gia,
+          thanh_tien: sp.so_luong * (sp.don_gia ?? sanPham.gia),
+          ma_nguoi_ban: sanPham.ma_nguoi_ban, // ✅ luôn chính xác
         },
+      });
+    }
+
+    // 💳 Tạo thanh toán
+    await prisma.thanh_toan.create({
+      data: {
+        ma_don_hang: donHang.ma_don_hang,
+        so_tien: Number(tong_tien), // ✅ ép số
+        phuong_thuc,
+        trang_thai: "ChoXuLy",
       },
     });
 
@@ -51,8 +71,8 @@ export async function POST(req) {
       message: "Đặt hàng thành công",
       donHang,
     });
-  } catch (error) {
-    console.error("Lỗi thanh toán:", error);
-    return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
+  } catch (err) {
+    console.error("Lỗi thanh toán:", err);
+    return NextResponse.json({ message: err.message }, { status: 500 });
   }
 }

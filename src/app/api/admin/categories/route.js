@@ -1,34 +1,40 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+// GET: lấy toàn bộ danh mục cha + con
+export async function GET() {
+  try {
+    const categories = await prisma.danh_muc.findMany({
+      where: { parent_id: null },
+      include: {
+        children: {
+          include: { children: true }, // load sâu 2 cấp
+        },
+      },
+      orderBy: { ma_danh_muc: "asc" },
+    });
 
+    return NextResponse.json(categories);
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+// POST: thêm mới
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const { ten_danh_muc, mo_ta } = body;
+    const { ten_danh_muc, mo_ta, parent_id } = await req.json();
 
-    if (!ten_danh_muc || ten_danh_muc.trim() === "") {
-      return NextResponse.json(
-        { error: "Tên danh mục không hợp lệ" },
-        { status: 400 }
-      );
-    }
-
-    const category = await prisma.danh_muc.create({
+    const newCategory = await prisma.danh_muc.create({
       data: {
-        ten_danh_muc: ten_danh_muc.trim(),
-        mo_ta: mo_ta || null,
-        hien_thi: true,
+        ten_danh_muc,
+        mo_ta: mo_ta || "",
+        parent_id: parent_id || null,
       },
     });
 
-    return NextResponse.json(category);
-  } catch (error) {
-    console.error("Lỗi khi thêm danh mục:", error);
-    return NextResponse.json(
-      { error: "Lỗi server khi thêm danh mục", detail: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json(newCategory);
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

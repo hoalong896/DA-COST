@@ -1,40 +1,59 @@
+"use client";
 import Image from "next/image";
 import { ShoppingCart, Search } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
+  const [keyword, setKeyword] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!keyword.trim()) return;
+    router.push(`/home2/search?query=${encodeURIComponent(keyword)}`);
+  };
+
   return (
     <header className="bg-gradient-to-r from-purple-300 to-purple-500 p-4 flex justify-between items-center">
       {/* Logo */}
       <div className="flex items-center space-x-2">
-        <Image src="/logo.png" alt="OBG Logo" width={50} height={50} />
+        <Link href="/home2">
+          <Image src="/logo.png" alt="OBG Logo" width={50} height={50} />
+        </Link>
       </div>
 
       {/* Search */}
-      <div className="flex items-center w-1/2">
+      <form onSubmit={handleSearch} className="flex items-center w-1/2">
         <input
           type="text"
           placeholder="Search..."
-          className="w-full px-4 py-2 rounded-l-lg border"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          className="w-full px-4 py-2 rounded-l-lg border focus:outline-none focus:ring-2 focus:ring-purple-400"
         />
-        <button className="bg-white px-4 py-2 rounded-r-lg">
+        <button
+          type="submit"
+          className="bg-white px-4 py-2 rounded-r-lg hover:bg-gray-100"
+        >
           <Search size={20} />
         </button>
-      </div>
+      </form>
 
       {/* Actions */}
       <div className="flex items-center space-x-4 text-white font-semibold">
-        <a href="/dangky">
+        <Link href="/dangky">
           <button className="hover:underline">Register</button>
-        </a>
-        <a href="../dangnhap">
+        </Link>
+        <Link href="/dangnhap">
           <button className="hover:underline">Login</button>
-        </a>
-        <a href="../dangnhap">
+        </Link>
+        <Link href="/home2/shop-cart">
           <button className="flex items-center space-x-1 bg-pink-500 px-3 py-2 rounded-lg">
             <ShoppingCart size={20} />
           </button>
-        </a>
+        </Link>
       </div>
     </header>
   );

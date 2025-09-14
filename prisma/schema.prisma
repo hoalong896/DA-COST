@@ -65,13 +65,19 @@ model danh_gia {
 }
 
 model danh_muc {
-  ma_danh_muc  Int        @id @default(autoincrement())
+  ma_danh_muc  Int         @id @default(autoincrement())
   ten_danh_muc String
   mo_ta        String?
-  hien_thi     Boolean?   @default(true)
-  ngay_tao     DateTime?  @default(now())
+  hien_thi     Boolean?    @default(true)
+  ngay_tao     DateTime?   @default(now())
   san_pham     san_pham[]
+
+  // quan hệ cha - con
+  parent_id Int?
+  parent    danh_muc?     @relation("CategoryHierarchy", fields: [parent_id], references: [ma_danh_muc])
+  children  danh_muc[]    @relation("CategoryHierarchy")
 }
+
 
 model don_hang {
   ma_don_hang       Int                 @id @default(autoincrement())

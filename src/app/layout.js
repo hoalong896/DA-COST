@@ -2,8 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import LoadingProvider from "./components/LoadingProvider";
 import RouteLoadingHandler from "./components/RouteLoadingHandler";
-import { ThemeProvider } from "next-themes";
-import ThemeToggle from "./components/ThemeToggle"; // client component
+import ClientWrapper from "./components/ClientWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,17 +25,12 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class" // thêm class="dark" vào <html> khi dark mode
-          defaultTheme="light" // theme mặc định
-          enableSystem={true} // cho phép theo system (Windows/Mac)
-        >
+        <ClientWrapper>
           <LoadingProvider>
             <RouteLoadingHandler />
-            <ThemeToggle /> {/* nút đổi theme */}
             {children}
           </LoadingProvider>
-        </ThemeProvider>
+        </ClientWrapper>
       </body>
     </html>
   );

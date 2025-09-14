@@ -1,4 +1,3 @@
-// src/app/api/home/shop-cart/add/route.js
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
@@ -13,38 +12,31 @@ function verifyJwt(token) {
   }
 }
 
+function getUserId(req) {
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader.split(" ")[1];
+  const payload = verifyJwt(token);
+  const userId = payload?.id;
+  return userId;
+}
+
 export async function POST(req) {
   try {
-    // ✅ Lấy token từ header
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
+    const userId = getUserId(req);
+    if (!userId)
       return NextResponse.json({ message: "Chưa đăng nhập" }, { status: 401 });
-    }
-    const token = authHeader.split(" ")[1];
-    const payload = verifyJwt(token);
-    if (!payload) {
-      return NextResponse.json(
-        { message: "Token không hợp lệ" },
-        { status: 403 }
-      );
-    }
-    const userId = payload.userId;
 
-    // ✅ Lấy dữ liệu từ body
     const { ma_san_pham, so_luong } = await req.json();
+    if (!ma_san_pham || !so_luong)
+      return NextResponse.json({ message: "Thiếu thông tin" }, { status: 400 });
 
-    // ✅ Tìm hoặc tạo giỏ hàng
     let cart = await prisma.gio_hang.findFirst({
       where: { ma_nguoi_mua: userId },
     });
+    if (!cart)
+      cart = await prisma.gio_hang.create({ data: { ma_nguoi_mua: userId } });
 
-    if (!cart) {
-      cart = await prisma.gio_hang.create({
-        data: { ma_nguoi_mua: userId },
-      });
-    }
-
-    // ✅ Kiểm tra sản phẩm đã có trong giỏ
     let item = await prisma.chi_tiet_gio_hang.findFirst({
       where: { ma_gio_hang: cart.ma_gio_hang, ma_san_pham },
     });
@@ -60,26 +52,12 @@ export async function POST(req) {
       });
     }
 
-    // ✅ Trả về giỏ hàng mới nhất
-    const updatedCart = await prisma.gio_hang.findFirst({
-      where: { ma_nguoi_mua: userId },
-      include: {
-        chi_tiet_gio_hang: {
-          include: {
-            san_pham: {
-              include: { san_pham_anh: true },
-            },
-          },
-        },
-      },
-    });
-
-    return NextResponse.json(updatedCart, { status: 200 });
-  } catch (err) {
-    console.error("❌ Lỗi thêm vào giỏ hàng:", err);
     return NextResponse.json(
-      { error: "Không thể thêm giỏ hàng" },
-      { status: 500 }
+      { message: "Đã thêm vào giỏ hàng" },
+      { status: 200 }
     );
+  } catch (err) {
+    console.error("❌ POST cart error:", err);
+    return NextResponse.json({ message: "Lỗi thêm giỏ hàng" }, { status: 500 });
   }
 }

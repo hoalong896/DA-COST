@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -32,5 +32,8 @@
     "eslint-config-next": "15.5.2",
     "prisma": "^6.15.0",
     "tailwindcss": "^4"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }

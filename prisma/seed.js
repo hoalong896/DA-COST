@@ -23,7 +23,7 @@ async function main() {
     ],
   });
 
-  console.log("✅ Đã thêm 2 admin!");
+  console.log(" Đã thêm 2 admin!");
 }
 
 main()

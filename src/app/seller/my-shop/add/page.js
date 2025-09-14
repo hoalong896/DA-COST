@@ -7,8 +7,9 @@ export default function ThemSanPhamPage() {
   const [gia, setGia] = useState("");
   const [soLuong, setSoLuong] = useState("");
   const [moTa, setMoTa] = useState("");
-  const [danhMuc, setDanhMuc] = useState(""); // sẽ lưu ID
-  const [categories, setCategories] = useState([]); // 👉 danh sách danh mục
+  const [danhMucCha, setDanhMucCha] = useState(""); // lưu ID danh mục cha
+  const [danhMucCon, setDanhMucCon] = useState(""); // lưu ID danh mục con
+  const [categories, setCategories] = useState([]); // danh sách danh mục
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [message, setMessage] = useState("");
@@ -17,7 +18,7 @@ export default function ThemSanPhamPage() {
 
   // lấy danh mục
   useEffect(() => {
-    fetch("/api/admin/categories/get_categories")
+    fetch("/api/admin/categories")
       .then((res) => res.json())
       .then((data) => setCategories(data))
       .catch((err) => console.error("Lỗi:", err));
@@ -27,11 +28,7 @@ export default function ThemSanPhamPage() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
-    if (file) {
-      setPreview(URL.createObjectURL(file));
-    } else {
-      setPreview(null);
-    }
+    setPreview(file ? URL.createObjectURL(file) : null);
   };
 
   // xử lý submit
@@ -51,9 +48,13 @@ export default function ThemSanPhamPage() {
       const formData = new FormData();
       formData.append("ten_san_pham", tenSanPham);
       formData.append("gia", gia);
-      formData.append("so_luong_ton", soLuong); // gửi số lượng
+      formData.append("so_luong_ton", soLuong);
       formData.append("mo_ta", moTa);
-      formData.append("ma_danh_muc", danhMuc);
+
+      // ưu tiên con, nếu không chọn con thì mới lưu cha
+      const danhMucId = danhMucCon || danhMucCha;
+      formData.append("ma_danh_muc", danhMucId);
+
       if (image) formData.append("image", image);
 
       const res = await fetch("/api/seller/my-shop/add", {
@@ -66,14 +67,14 @@ export default function ThemSanPhamPage() {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage(" Thêm sản phẩm thành công!");
+        setMessage("✅ Thêm sản phẩm thành công!");
         setTimeout(() => router.push("/seller/my-shop"), 1200);
       } else {
-        setMessage(data.message || " Thêm sản phẩm thất bại!");
+        setMessage(data.message || "❌ Thêm sản phẩm thất bại!");
       }
     } catch (err) {
       console.error("Lỗi:", err);
-      setMessage(" Lỗi server!");
+      setMessage("❌ Lỗi server!");
     } finally {
       setLoading(false);
     }
@@ -137,19 +138,44 @@ export default function ThemSanPhamPage() {
           {/* Danh mục */}
           <div>
             <label className="font-semibold">Danh mục:</label>
+
+            {/* Chọn cha */}
             <select
-              value={danhMuc}
-              onChange={(e) => setDanhMuc(e.target.value)}
+              value={danhMucCha}
+              onChange={(e) => {
+                setDanhMucCha(e.target.value);
+                setDanhMucCon(""); // reset con khi đổi cha
+              }}
               required
               className="w-full border px-3 py-2 rounded mt-1"
             >
-              <option value="">-- Chọn danh mục --</option>
+              <option value="">-- Chọn danh mục cha --</option>
               {categories.map((cat) => (
                 <option key={cat.ma_danh_muc} value={cat.ma_danh_muc}>
                   {cat.ten_danh_muc}
                 </option>
               ))}
             </select>
+
+            {/* Nếu có con → cho chọn */}
+            {danhMucCha &&
+              categories.find((c) => c.ma_danh_muc == danhMucCha)?.children
+                ?.length > 0 && (
+                <select
+                  value={danhMucCon}
+                  onChange={(e) => setDanhMucCon(e.target.value)}
+                  className="w-full border px-3 py-2 rounded mt-2"
+                >
+                  <option value="">-- Chọn danh mục con --</option>
+                  {categories
+                    .find((c) => c.ma_danh_muc == danhMucCha)
+                    .children.map((child) => (
+                      <option key={child.ma_danh_muc} value={child.ma_danh_muc}>
+                        {child.ten_danh_muc}
+                      </option>
+                    ))}
+                </select>
+              )}
           </div>
 
           {/* Ảnh sản phẩm */}
@@ -163,7 +189,7 @@ export default function ThemSanPhamPage() {
             />
           </div>
 
-          {/* Hiển thị preview ảnh */}
+          {/* Preview ảnh */}
           {preview && (
             <div className="mt-3">
               <p className="text-sm text-gray-600 mb-1">Ảnh xem trước:</p>
@@ -175,7 +201,7 @@ export default function ThemSanPhamPage() {
             </div>
           )}
 
-          {/* Nút submit */}
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
@@ -189,7 +215,7 @@ export default function ThemSanPhamPage() {
         {message && (
           <p
             className={`mt-4 text-center ${
-              message.includes("")
+              message.includes("✅")
                 ? "text-green-600 font-semibold"
                 : "text-red-600"
             }`}

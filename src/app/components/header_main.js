@@ -3,14 +3,23 @@ import { Search, ShoppingCart, User, Bell, Store } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [role, setRole] = useState(null);
+  const [keyword, setKeyword] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const r = localStorage.getItem("role");
     setRole(r);
   }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!keyword.trim()) return;
+    router.push(`/home2/search?query=${encodeURIComponent(keyword)}`);
+  };
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-purple-300 shadow-md relative">
@@ -23,16 +32,24 @@ export default function Header() {
       </Link>
 
       {/* Search */}
-      <div className="flex-1 mx-6 flex items-center max-w-md">
+      <form
+        onSubmit={handleSearch}
+        className="flex-1 mx-6 flex items-center max-w-md"
+      >
         <input
           type="text"
           placeholder="Search..."
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
           className="flex-1 px-3 py-1 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm"
         />
-        <button className="bg-green-400 px-3 py-1 rounded-r-md hover:bg-green-500">
+        <button
+          type="submit"
+          className="bg-green-400 px-3 py-1 rounded-r-md hover:bg-green-500"
+        >
           <Search size={18} />
         </button>
-      </div>
+      </form>
 
       {/* Actions */}
       <div className="flex items-center space-x-4">

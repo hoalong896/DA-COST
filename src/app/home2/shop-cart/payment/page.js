@@ -1,273 +1,177 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function CheckoutPage() {
-  const [products, setProducts] = useState([]);
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    note: "",
-  });
-  const [shipping, setShipping] = useState("standard");
-  const [payment, setPayment] = useState("cod");
-  const [loading, setLoading] = useState(false);
+export default function PaymentPage() {
+  const [user, setUser] = useState(null);
+  const [items, setItems] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [phuongThuc, setPhuongThuc] = useState("COD");
+
+  // Cho phép chỉnh sửa
+  const [hoTen, setHoTen] = useState("");
+  const [soDienThoai, setSoDienThoai] = useState("");
+  const [diaChi, setDiaChi] = useState("");
 
   const router = useRouter();
 
-  // 🛒 Lấy giỏ hàng
   useEffect(() => {
-    async function fetchCart() {
-      try {
-        const res = await fetch("/api/home/shop-cart", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        const data = await res.json();
-
-        const items = (data.chi_tiet_gio_hang || []).map((ct) => ({
-          id: ct.ma_san_pham,
-          name: ct.san_pham.ten_san_pham, // 👈 fix theo model prisma
-          price: ct.san_pham.gia,
-          qty: ct.so_luong,
-          image: ct.san_pham.san_pham_anh?.[0]?.url || "/no-image.png",
-          ma_nguoi_ban: ct.san_pham.ma_nguoi_ban, // 👈 cần để tạo chi_tiet_don_hang
-        }));
-
-        setProducts(items);
-      } catch (error) {
-        console.error("Lỗi tải giỏ hàng:", error);
-      }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
     }
-    fetchCart();
-  }, []);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  // 🗑 Xoá sản phẩm
-  const handleRemove = async (id) => {
-    try {
-      await fetch(`/api/home/shop-cart/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+    // 🔑 Lấy thông tin user
+    fetch("/api/auth/profile", {
+      headers: { Authorization: "Bearer " + token },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setUser(data.user);
+        setHoTen(data.user.ho_ten || "");
+        setSoDienThoai(data.user.so_dien_thoai || "");
+        setDiaChi(data.user.dia_chi || "");
       });
-      setProducts((prev) => prev.filter((p) => p.id !== id));
-    } catch (error) {
-      console.error("Lỗi xoá sản phẩm:", error);
+
+    // 🔄 Lấy dữ liệu checkout (giỏ hàng hoặc mua ngay)
+    const storedItems = JSON.parse(localStorage.getItem("checkoutItems")) || [];
+    const storedTotal = Number(localStorage.getItem("checkoutTotal")) || 0;
+    const checkoutMode = localStorage.getItem("checkoutMode"); // "cart" | "buyNow"
+
+    if (checkoutMode === "buyNow") {
+      // 👉 Chỉ hiển thị sản phẩm vừa chọn ở trang chủ
+      setItems(storedItems);
+      setTotal(storedTotal);
+    } else {
+      // 👉 Mặc định: hiển thị danh sách từ giỏ hàng
+      setItems(storedItems);
+      setTotal(storedTotal);
     }
-  };
+  }, [router]);
 
-  // ✅ Đặt hàng
-  const handleCheckout = async () => {
-    setLoading(true);
+  async function handlePayment() {
     try {
-      const chi_tiet = products.map((p) => ({
-        ma_san_pham: p.id,
-        so_luong: p.qty,
-        don_gia: p.price,
-        ma_nguoi_ban: p.ma_nguoi_ban,
-      }));
-
-      const tong_tien = chi_tiet.reduce(
-        (sum, item) => sum + item.so_luong * item.don_gia,
-        0
-      );
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
 
       const res = await fetch("/api/home/shop-cart/payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: "Bearer " + token,
         },
         body: JSON.stringify({
-          phuong_thuc: payment,
-          tong_tien,
-          chi_tiet,
+          phuong_thuc: phuongThuc,
+          tong_tien: total,
+          ho_ten: hoTen,
+          so_dien_thoai: soDienThoai,
+          dia_chi: diaChi,
+          chi_tiet: items.map((sp) => ({
+            ma_san_pham: sp.san_pham.ma_san_pham,
+            so_luong: sp.so_luong,
+            don_gia: sp.san_pham.gia,
+            ma_nguoi_ban: sp.san_pham.ma_nguoi_ban,
+          })),
         }),
       });
 
       const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem("lastOrder", JSON.stringify(data.donHang));
-        router.push("/home2/shop-cart/payment/success");
-      } else {
-        alert(data.message || "Có lỗi xảy ra khi đặt hàng");
+
+      console.log("Payment API response:", res.status, data);
+
+      if (!res.ok) {
+        alert("Thanh toán thất bại: " + (data.message || "Lỗi không xác định"));
+        return;
       }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Có lỗi xảy ra khi đặt hàng");
-    } finally {
-      setLoading(false);
+
+      // ✅ Clear dữ liệu tạm sau khi thanh toán thành công
+      localStorage.removeItem("checkoutItems");
+      localStorage.removeItem("checkoutTotal");
+      localStorage.removeItem("checkoutMode");
+
+      // ✅ Báo thành công rồi mới chuyển trang
+      alert("Thanh toán thành công!");
+      router.push("/home2/shop-cart/payment/success");
+    } catch (err) {
+      alert("Lỗi thanh toán: " + err.message);
     }
-  };
-
-  if (loading) {
-    return <div className="text-center text-black">⏳ Đang xử lý...</div>;
   }
 
-  if (products.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white text-black">
-        <p className="text-lg">🛒 Giỏ hàng của bạn đang trống</p>
-        <a
-          href="/home2"
-          className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-        >
-          Tiếp tục mua sắm
-        </a>
-      </div>
-    );
-  }
-
-  const subtotal = products.reduce((sum, p) => sum + p.price * p.qty, 0);
-  const shippingFee = shipping === "fast" ? 45000 : 25000;
-  const total = subtotal + shippingFee;
+  if (!user) return <div className="p-6">Đang tải thông tin...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      {/* Steps */}
-      <div className="flex justify-center gap-16 mb-10 text-center">
-        <div className="flex flex-col items-center">
-          <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-black">
-            1
-          </div>
-          <span className="mt-2 text-sm text-black">Giỏ hàng</span>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center">
-            2
-          </div>
-          <span className="mt-2 text-sm text-black">Thanh toán</span>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-black">
-            3
-          </div>
-          <span className="mt-2 text-sm text-black">Hoàn tất</span>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Thanh toán</h1>
+
+      {/* Thông tin người mua */}
+      <div className="bg-white shadow rounded p-4 mb-6">
+        <h2 className="font-semibold mb-2">Thông tin người mua</h2>
+        <div className="flex flex-col gap-3">
+          <input
+            type="text"
+            value={hoTen}
+            onChange={(e) => setHoTen(e.target.value)}
+            placeholder="Họ tên"
+            className="border p-2 rounded"
+          />
+          <input
+            type="text"
+            value={soDienThoai}
+            onChange={(e) => setSoDienThoai(e.target.value)}
+            placeholder="Số điện thoại"
+            className="border p-2 rounded"
+          />
+          <textarea
+            value={diaChi}
+            onChange={(e) => setDiaChi(e.target.value)}
+            placeholder="Địa chỉ giao hàng"
+            className="border p-2 rounded"
+          />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-6">
-        {/* Form */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow p-6">
-          <h2 className="font-bold text-xl mb-4 text-black">
-            Thông tin nhận hàng
-          </h2>
-          <div className="grid grid-cols-1 gap-4">
-            <input
-              name="name"
-              placeholder="Họ và tên"
-              className="border p-3 rounded-lg text-black"
-              value={form.name}
-              onChange={handleChange}
-            />
-            <input
-              name="phone"
-              placeholder="Số điện thoại"
-              className="border p-3 rounded-lg text-black"
-              value={form.phone}
-              onChange={handleChange}
-            />
-            <input
-              name="email"
-              placeholder="Email"
-              className="border p-3 rounded-lg text-black"
-              value={form.email}
-              onChange={handleChange}
-            />
-            <input
-              name="address"
-              placeholder="Địa chỉ"
-              className="border p-3 rounded-lg text-black"
-              value={form.address}
-              onChange={handleChange}
-            />
-            <input
-              name="note"
-              placeholder="Ghi chú (tùy chọn)"
-              className="border p-3 rounded-lg text-black"
-              value={form.note}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        {/* Order summary */}
-        <div className="bg-gray-100 rounded-2xl shadow p-6 text-black">
-          <h2 className="font-bold text-xl mb-4">Đơn hàng</h2>
-
-          {products.map((p) => (
-            <div
-              key={p.id}
-              className="flex justify-between items-center border-b py-3"
-            >
-              <div className="flex items-center gap-3">
-                <img
-                  src={p.image}
-                  alt={p.name}
-                  className="w-16 h-16 object-cover rounded"
-                />
-                <div>
-                  <p className="font-medium">{p.name}</p>
-                  <p className="text-sm">Giá: {p.price.toLocaleString()}đ</p>
-                  <p className="text-sm">SL: x{p.qty}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => handleRemove(p.id)}
-                className="text-red-500 hover:underline"
-              >
-                Xoá
-              </button>
-            </div>
-          ))}
-
-          <div className="mt-4 text-sm space-y-2 text-black">
-            <div className="flex justify-between">
-              <span>Tạm tính</span> <span>{subtotal.toLocaleString()}đ</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Phí vận chuyển</span>{" "}
-              <span>{shippingFee.toLocaleString()}đ</span>
-            </div>
-            <div className="flex justify-between font-bold text-lg">
-              <span>Tổng cộng</span> <span>{total.toLocaleString()}đ</span>
-            </div>
-          </div>
-
-          {/* Nút đặt hàng */}
-          <button
-            onClick={handleCheckout}
-            disabled={loading}
-            className="w-full mt-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50"
+      {/* Sản phẩm */}
+      <div className="bg-white shadow rounded p-4 mb-6">
+        <h2 className="font-semibold mb-2">Sản phẩm</h2>
+        {items.map((sp) => (
+          <div
+            key={sp.ma_ct || sp.san_pham.ma_san_pham}
+            className="flex justify-between border-b py-2 text-sm"
           >
-            {loading ? "Đang xử lý..." : "ĐẶT HÀNG / THANH TOÁN"}
-          </button>
-
-          {/* Nút back & về trang chủ */}
-          <div className="flex gap-3 mt-4">
-            <button
-              onClick={() => router.back()}
-              className="flex-1 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400"
-            >
-              ⬅ Quay lại
-            </button>
-            <button
-              onClick={() => router.push("/home2")}
-              className="flex-1 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
-            >
-              🏠 Về trang chủ
-            </button>
+            <span>
+              {sp.san_pham.ten_san_pham} × {sp.so_luong}
+            </span>
+            <span>{(sp.so_luong * sp.san_pham.gia).toLocaleString()}₫</span>
           </div>
+        ))}
+        <div className="font-bold text-right mt-2">
+          Tổng: {Number(total).toLocaleString()}₫
         </div>
       </div>
+
+      {/* Phương thức thanh toán */}
+      <div className="bg-white shadow rounded p-4 mb-6">
+        <h2 className="font-semibold mb-2">Phương thức thanh toán</h2>
+        <select
+          value={phuongThuc}
+          onChange={(e) => setPhuongThuc(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+          <option value="BANK">Chuyển khoản ngân hàng</option>
+        </select>
+      </div>
+
+      <button
+        onClick={handlePayment}
+        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+      >
+        Xác nhận thanh toán
+      </button>
     </div>
   );
 }
