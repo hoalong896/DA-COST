@@ -22,7 +22,7 @@ export default function PaymentPage() {
       return;
     }
 
-    // 🔑 Lấy thông tin user
+    //  Lấy thông tin user
     fetch("/api/auth/profile", {
       headers: { Authorization: "Bearer " + token },
     })
@@ -34,17 +34,17 @@ export default function PaymentPage() {
         setDiaChi(data.user.dia_chi || "");
       });
 
-    // 🔄 Lấy dữ liệu checkout (giỏ hàng hoặc mua ngay)
+    //  Lấy dữ liệu checkout (giỏ hàng hoặc mua ngay)
     const storedItems = JSON.parse(localStorage.getItem("checkoutItems")) || [];
     const storedTotal = Number(localStorage.getItem("checkoutTotal")) || 0;
     const checkoutMode = localStorage.getItem("checkoutMode"); // "cart" | "buyNow"
 
     if (checkoutMode === "buyNow") {
-      // 👉 Chỉ hiển thị sản phẩm vừa chọn ở trang chủ
+      //  Chỉ hiển thị sản phẩm vừa chọn ở trang chủ
       setItems(storedItems);
       setTotal(storedTotal);
     } else {
-      // 👉 Mặc định: hiển thị danh sách từ giỏ hàng
+      // Mặc định: hiển thị danh sách từ giỏ hàng
       setItems(storedItems);
       setTotal(storedTotal);
     }
@@ -88,13 +88,16 @@ export default function PaymentPage() {
         return;
       }
 
-      // ✅ Clear dữ liệu tạm sau khi thanh toán thành công
       localStorage.removeItem("checkoutItems");
       localStorage.removeItem("checkoutTotal");
       localStorage.removeItem("checkoutMode");
 
-      // ✅ Báo thành công rồi mới chuyển trang
       alert("Thanh toán thành công!");
+      window.dispatchEvent(
+        new CustomEvent("add-notification", {
+          detail: " Mua ngay thành công",
+        })
+      );
       router.push("/home2/shop-cart/payment/success");
     } catch (err) {
       alert("Lỗi thanh toán: " + err.message);
@@ -171,6 +174,12 @@ export default function PaymentPage() {
         className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
       >
         Xác nhận thanh toán
+      </button>
+      <button
+        onClick={() => router.push("/home2")}
+        className="w-full mt-3 bg-gray-200 text-gray-700 py-2 rounded hover:bg-gray-300"
+      >
+        Quay lại trang chủ
       </button>
     </div>
   );

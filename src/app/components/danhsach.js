@@ -4,7 +4,7 @@ import { ShoppingCart, Eye, Zap } from "lucide-react";
 
 export default function DanhSach({ category }) {
   const [products, setProducts] = useState([]);
-  const [loadingId, setLoadingId] = useState(null); // ✅ loading theo từng sản phẩm
+  const [loadingId, setLoadingId] = useState(null); //  loading theo từng sản phẩm
 
   // phân trang
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,18 +42,16 @@ export default function DanhSach({ category }) {
       }
 
       if (redirect) {
-        // 👉 Lưu sản phẩm tạm cho "Mua ngay"
         const item = {
           san_pham: sp,
           so_luong: 1,
         };
         localStorage.setItem("checkoutItems", JSON.stringify([item]));
         localStorage.setItem("checkoutTotal", sp.gia);
-        localStorage.setItem("checkoutMode", "buyNow"); // đánh dấu là mua ngay
+        localStorage.setItem("checkoutMode", "buyNow");
 
         window.location.href = "/home2/shop-cart/payment";
       } else {
-        // 👉 Thêm vào giỏ hàng bình thường
         const res = await fetch("/api/home/shop-cart/add", {
           method: "POST",
           headers: {
@@ -69,7 +67,12 @@ export default function DanhSach({ category }) {
             data?.message || data?.error || "Không thể thêm vào giỏ hàng"
           );
 
-        alert("✅ Đã thêm sản phẩm vào giỏ hàng!");
+        alert(" Đã thêm sản phẩm vào giỏ hàng!");
+        window.dispatchEvent(
+          new CustomEvent("add-notification", {
+            detail: " Đã thêm sản phẩm vào giỏ hàng!",
+          })
+        );
       }
     } catch (err) {
       console.error("Lỗi thêm giỏ hàng:", err);
@@ -136,7 +139,7 @@ export default function DanhSach({ category }) {
                 <button
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
                   disabled={loadingId === sp.ma_san_pham}
-                  onClick={() => addToCart(sp)} // 🛒 thêm giỏ hàng
+                  onClick={() => addToCart(sp)}
                 >
                   <ShoppingCart size={16} /> Giỏ
                 </button>

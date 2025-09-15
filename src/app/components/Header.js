@@ -18,9 +18,14 @@ export default function Header() {
   return (
     <header className="bg-gradient-to-r from-purple-300 to-purple-500 p-4 flex justify-between items-center">
       {/* Logo */}
-      <div className="flex items-center space-x-2">
-        <Link href="/home2">
-          <Image src="/logo.png" alt="OBG Logo" width={50} height={50} />
+      <div className="flex items-center space-x-2 cursor-pointer">
+        <Link href="/dangnhap" className="flex items-center">
+          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-purple-500 font-bold text-xl">
+            OBG
+          </div>
+          <span className="ml-2 text-white font-bold text-2xl hover:text-yellow-300 transition-colors">
+            Shop
+          </span>
         </Link>
       </div>
 

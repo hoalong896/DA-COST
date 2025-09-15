@@ -32,11 +32,10 @@ export async function POST(req) {
       );
     }
 
-    // 🔥 Gắn cả role vào token
     const token = jwt.sign(
       {
         id: user.ma_nguoi_dung,
-        role: user.vai_tro, // ví dụ: "admin" hoặc "user"
+        role: user.vai_tro,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }

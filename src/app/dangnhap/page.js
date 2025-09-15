@@ -65,7 +65,7 @@ export default function DangNhapPage() {
         <p className="text-sm text-black mb-6">Sign in to your account</p>
 
         {successLoading ? (
-          <p className="text-yellow-700 font-semibold">Đang chuyển hướng...</p>
+          <p className="text-yellow-700 font-semibold">Đang đăng nhập ...</p>
         ) : (
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <input

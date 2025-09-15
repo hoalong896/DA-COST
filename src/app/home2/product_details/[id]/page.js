@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { ShoppingCart, Zap } from "lucide-react";
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
@@ -9,20 +10,32 @@ export default function ProductDetailsPage() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ✅ loading cho nút giỏ hàng / mua ngay
+  const [loadingCart, setLoadingCart] = useState(false);
+
   // State đánh giá
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [reviews, setReviews] = useState([
-    { user: "nguoidung1", rating: 5, comment: "Sản phẩm rất tốt!" },
-    {
-      user: "nguoidung2",
-      rating: 4,
-      comment: "Giao hàng nhanh, chất lượng ổn.",
-    },
-    { user: "nguoidung3", rating: 3, comment: "Tạm được, còn cải thiện." },
-  ]);
+  const [reviews, setReviews] = useState([]);
 
-  // State phóng to ảnh
+  const handleSubmitReview = () => {
+    if (!rating || !comment.trim()) {
+      alert("Vui lòng chọn số sao và nhập bình luận!");
+      return;
+    }
+
+    const newReview = {
+      user: "Bạn",
+      rating,
+      comment,
+    };
+
+    // thêm vào đầu danh sách
+    setReviews([newReview, ...reviews]);
+    setRating(0);
+    setComment("");
+  };
+
   const [zoomImage, setZoomImage] = useState(null);
 
   useEffect(() => {
@@ -49,27 +62,64 @@ export default function ProductDetailsPage() {
     fetchProduct();
   }, [id]);
 
+  // ✅ thêm giỏ hàng
+  const addToCart = async (redirect = false) => {
+    try {
+      setLoadingCart(true);
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        alert("Vui lòng đăng nhập trước khi mua hàng!");
+        router.push("/dangnhap");
+        return;
+      }
+
+      if (redirect) {
+        // 👉 mua ngay
+        const item = {
+          san_pham: product,
+          so_luong: 1,
+        };
+        localStorage.setItem("checkoutItems", JSON.stringify([item]));
+        localStorage.setItem("checkoutTotal", product.gia);
+        localStorage.setItem("checkoutMode", "buyNow");
+
+        router.push("/home2/shop-cart/payment");
+      } else {
+        // 👉 thêm giỏ hàng
+        const res = await fetch("/api/home/shop-cart/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            ma_san_pham: product.ma_san_pham,
+            so_luong: 1,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok)
+          throw new Error(data?.message || data?.error || "Thêm thất bại!");
+
+        alert("✅ Đã thêm vào giỏ hàng!");
+      }
+    } catch (err) {
+      console.error("Lỗi giỏ hàng:", err);
+      alert(err.message || "Không thể thêm giỏ hàng!");
+    } finally {
+      setLoadingCart(false);
+    }
+  };
+
   if (loading) return <p className="p-6">Đang tải chi tiết sản phẩm...</p>;
   if (!product) return <p className="p-6">Không tìm thấy sản phẩm.</p>;
-
-  const handleReport = () => {
-    alert("Bạn đã báo cáo sản phẩm này. Admin sẽ kiểm tra!");
-  };
-
-  const handleSubmitReview = () => {
-    if (!rating || !comment) {
-      alert("Vui lòng chọn số sao và nhập bình luận!");
-      return;
-    }
-    const newReview = { user: "Bạn", rating, comment };
-    setReviews([newReview, ...reviews]);
-    setRating(0);
-    setComment("");
-  };
 
   return (
     <div className="p-6 space-y-6 bg-white min-h-screen text-black">
       {/* Nút điều hướng */}
+
       <div className="flex justify-between mb-4">
         <button
           onClick={() => router.push("/home2")}
@@ -78,7 +128,7 @@ export default function ProductDetailsPage() {
           Thoát
         </button>
         <button
-          onClick={handleReport}
+          onClick={() => alert("Bạn đã báo cáo sản phẩm!")}
           className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
         >
           Báo cáo sản phẩm
@@ -106,7 +156,7 @@ export default function ProductDetailsPage() {
           <div className="flex-1 space-y-3">
             <h1 className="text-2xl font-bold">{product.ten_san_pham}</h1>
             <p>
-              <b>Giá:</b> {product.gia} VND
+              <b>Giá:</b> {product.gia.toLocaleString()} VND
             </p>
             <p>
               <b>Mô tả:</b> {product.mo_ta}
@@ -129,19 +179,22 @@ export default function ProductDetailsPage() {
               )}
             </p>
 
-            {/* Nút */}
+            {/* ✅ Nút giỏ hàng và mua ngay */}
             <div className="flex gap-4 mt-4">
               <button
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                disabled={product.so_luong_ton <= 0}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
+                disabled={loadingCart}
+                onClick={() => addToCart(false)}
               >
-                Thêm vào giỏ hàng
+                <ShoppingCart size={16} /> Giỏ
               </button>
+
               <button
-                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                disabled={product.so_luong_ton <= 0}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                disabled={loadingCart || product.so_luong_ton <= 0}
+                onClick={() => addToCart(true)}
               >
-                Mua ngay
+                <Zap size={16} /> Mua ngay
               </button>
             </div>
           </div>
@@ -151,13 +204,11 @@ export default function ProductDetailsPage() {
       {/* Thông tin shop */}
       <div className="bg-gray-100 p-6 rounded-lg shadow">
         <div className="flex items-center gap-4">
-          {/* Avatar người bán */}
           <img
             src={product.nguoi_dung?.avatar || "/default-avatar.png"}
             alt="Avatar người bán"
             className="w-16 h-16 rounded-full object-cover border border-gray-300"
           />
-
           <div className="flex-1">
             <h2 className="text-lg font-bold">
               {product.nguoi_dung?.ho_ten || "Người bán"}
@@ -166,7 +217,6 @@ export default function ProductDetailsPage() {
               Email: {product.nguoi_dung?.email || "Chưa có email"}
             </p>
           </div>
-
           <div className="flex gap-2">
             <button className="px-3 py-1 border border-gray-400 rounded hover:bg-gray-200">
               Liên hệ
@@ -206,7 +256,6 @@ export default function ProductDetailsPage() {
           onChange={(e) => setComment(e.target.value)}
         ></textarea>
 
-        {/* Nút gửi */}
         <button
           onClick={handleSubmitReview}
           className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
@@ -224,7 +273,6 @@ export default function ProductDetailsPage() {
               key={idx}
               className="flex items-start gap-3 p-3 bg-white rounded border"
             >
-              {/* Avatar */}
               <img
                 src="/default-avatar.png"
                 alt="user avatar"
