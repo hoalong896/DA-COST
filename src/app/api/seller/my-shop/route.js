@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
+import { v2 as cloudinary } from "cloudinary";
 
-const prisma = new PrismaClient();
+// ⚙️ Config Cloudinary (lấy từ .env)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 const SECRET_KEY = process.env.JWT_SECRET || "123456";
 
-// Middleware check seller
+// 🛡 Middleware check seller
 async function authSeller(req) {
   try {
     const authHeader = req.headers.get("authorization");
@@ -49,7 +56,6 @@ export async function GET(req) {
       },
     });
 
-    // Chuẩn hóa để FE dễ dùng
     const mapped = products.map((sp) => ({
       id: sp.ma_san_pham,
       ten_san_pham: sp.ten_san_pham,
@@ -87,6 +93,7 @@ export async function DELETE(req) {
 
     const product = await prisma.san_pham.findUnique({
       where: { ma_san_pham: id },
+      include: { san_pham_anh: true },
     });
 
     if (!product || product.ma_nguoi_ban !== auth.user.ma_nguoi_dung) {
@@ -103,9 +110,24 @@ export async function DELETE(req) {
       );
     }
 
+    for (const img of product.san_pham_anh) {
+      if (img.public_id) {
+        try {
+          await cloudinary.uploader.destroy(img.public_id);
+        } catch (err) {
+          console.warn("Không xoá được ảnh trên Cloudinary:", err);
+        }
+      }
+    }
+
+    await prisma.san_pham_anh.deleteMany({ where: { ma_san_pham: id } });
+
     await prisma.san_pham.delete({ where: { ma_san_pham: id } });
 
-    return NextResponse.json({ message: "Xoá sản phẩm thành công" });
+    return NextResponse.json({
+      message: "Xoá sản phẩm thành công",
+      id,
+    });
   } catch (err) {
     console.error("DELETE /api/seller/my-shop error:", err);
     return NextResponse.json({ message: "Lỗi server" }, { status: 500 });

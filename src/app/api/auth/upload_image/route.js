@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 
-export const runtime = "nodejs"; // bắt buộc để dùng fs/path
+// ⚙️ Cấu hình Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
@@ -16,24 +22,17 @@ export async function POST(req) {
       );
     }
 
-    // tạo thư mục lưu ảnh nếu chưa có
-    const uploadDir = path.join(process.cwd(), "public/uploads");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    // đặt tên file duy nhất
-    const fileName = `${Date.now()}-${file.name}`;
-    const filePath = path.join(uploadDir, fileName);
-
-    // ghi file vào thư mục public/uploads
+    // chuyển file -> buffer -> base64
     const buffer = Buffer.from(await file.arrayBuffer());
-    fs.writeFileSync(filePath, buffer);
+    const base64File = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-    // đường dẫn public để hiển thị lại trên UI
-    const fileUrl = `/uploads/${fileName}`;
+    // upload lên Cloudinary
+    const uploadRes = await cloudinary.uploader.upload(base64File, {
+      folder: "uploads", // thư mục trong Cloudinary
+      resource_type: "auto",
+    });
 
-    return NextResponse.json({ url: fileUrl });
+    return NextResponse.json({ url: uploadRes.secure_url });
   } catch (err) {
     console.error("Upload error:", err);
     return NextResponse.json({ message: "Lỗi upload" }, { status: 500 });

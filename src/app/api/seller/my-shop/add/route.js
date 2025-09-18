@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { writeFile } from "fs/promises";
-import path from "path";
 import jwt from "jsonwebtoken";
+import { v2 as cloudinary } from "cloudinary";
 
 const prisma = new PrismaClient();
+
+// ⚙️ Config Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(req) {
   try {
@@ -41,6 +47,7 @@ export async function POST(req) {
       );
     }
 
+    // Tạo sản phẩm mới
     const newProduct = await prisma.san_pham.create({
       data: {
         ten_san_pham,
@@ -56,17 +63,21 @@ export async function POST(req) {
 
     let url = null;
     if (file && file.size > 0) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+      // convert file sang base64
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const base64File = `data:${file.type};base64,${buffer.toString(
+        "base64"
+      )}`;
 
-      const filename = `${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(2, 8)}.jpg`;
+      // upload lên cloudinary
+      const uploadRes = await cloudinary.uploader.upload(base64File, {
+        folder: "products",
+        resource_type: "auto",
+      });
 
-      const uploadPath = path.join(process.cwd(), "public/uploads", filename);
-      await writeFile(uploadPath, buffer);
-      url = `/uploads/${filename}`;
+      url = uploadRes.secure_url;
 
+      // lưu link vào bảng san_pham_anh
       await prisma.san_pham_anh.create({
         data: {
           ma_san_pham: newProduct.ma_san_pham,
