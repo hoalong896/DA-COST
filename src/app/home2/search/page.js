@@ -52,7 +52,7 @@ export default function SearchPage() {
       </button>
 
       <h1 className="text-xl font-bold mb-4">
-        Kết quả cho: "{query}" ({results.length} sản phẩm)
+        Kết quả cho: &quot;{query}&quot; ({results.length} sản phẩm)
       </h1>
 
       {results.length === 0 && <p>Không tìm thấy sản phẩm nào.</p>}
@@ -102,7 +102,7 @@ export default function SearchPage() {
                 <button
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                   disabled={loadingId === sp.ma_san_pham}
-                  onClick={() => alert("🛒 Thêm giỏ hàng ")}
+                  onClick={() => alert(" Thêm giỏ hàng ")}
                 >
                   <ShoppingCart size={16} /> Giỏ
                 </button>
@@ -110,7 +110,7 @@ export default function SearchPage() {
                 <button
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                   disabled={loadingId === sp.ma_san_pham}
-                  onClick={() => alert("⚡ Mua ngay (demo)")}
+                  onClick={() => alert(" Mua ngay (demo)")}
                 >
                   <Zap size={16} /> Mua
                 </button>
