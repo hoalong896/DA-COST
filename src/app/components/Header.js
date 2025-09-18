@@ -16,17 +16,15 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-gradient-to-r from-purple-300 to-purple-500 p-4 flex justify-between items-center">
+    <header className="flex items-center justify-between px-6 py-4 bg-sky-200 shadow-md relative">
       {/* Logo */}
       <div className="flex items-center space-x-2 cursor-pointer">
-        <Link href="/dangnhap" className="flex items-center">
-          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-purple-500 font-bold text-xl">
-            OBG
-          </div>
-          <span className="ml-2 text-white font-bold text-2xl hover:text-yellow-300 transition-colors">
-            Shop
-          </span>
-        </Link>
+        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-purple-500 font-bold text-xl">
+          OBG
+        </div>
+        <span className="ml-2 text-green font-bold text-2xl hover:text-orange-300 transition-colors">
+          Shop
+        </span>
       </div>
 
       {/* Search */}
@@ -47,7 +45,7 @@ export default function Header() {
       </form>
 
       {/* Actions */}
-      <div className="flex items-center space-x-4 text-white font-semibold">
+      <div className="flex items-center space-x-4 text-black font-semibold">
         <Link href="/dangky">
           <button className="hover:underline">Register</button>
         </Link>

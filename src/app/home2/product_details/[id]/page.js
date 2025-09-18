@@ -24,13 +24,7 @@ export default function ProductDetailsPage() {
       return;
     }
 
-    const newReview = {
-      user: "Bạn",
-      rating,
-      comment,
-    };
-
-    // thêm vào đầu danh sách
+    const newReview = { user: "Bạn", rating, comment };
     setReviews([newReview, ...reviews]);
     setRating(0);
     setComment("");
@@ -45,9 +39,8 @@ export default function ProductDetailsPage() {
       try {
         const res = await fetch(`/api/home/product/${id}`);
         const data = await res.json();
-        if (res.ok) {
-          setProduct(data);
-        } else {
+        if (res.ok) setProduct(data);
+        else {
           setProduct(null);
           alert(data.error || "Có lỗi xảy ra!");
         }
@@ -75,18 +68,13 @@ export default function ProductDetailsPage() {
       }
 
       if (redirect) {
-        // 👉 mua ngay
-        const item = {
-          san_pham: product,
-          so_luong: 1,
-        };
+        const item = { san_pham: product, so_luong: 1 };
         localStorage.setItem("checkoutItems", JSON.stringify([item]));
         localStorage.setItem("checkoutTotal", product.gia);
         localStorage.setItem("checkoutMode", "buyNow");
 
         router.push("/home2/shop-cart/payment");
       } else {
-        // 👉 thêm giỏ hàng
         const res = await fetch("/api/home/shop-cart/add", {
           method: "POST",
           headers: {
@@ -117,33 +105,32 @@ export default function ProductDetailsPage() {
   if (!product) return <p className="p-6">Không tìm thấy sản phẩm.</p>;
 
   return (
-    <div className="p-6 space-y-6 bg-white min-h-screen text-black">
+    <div className="p-6 space-y-6 bg-[#f5fbff] min-h-screen text-gray-900">
       {/* Nút điều hướng */}
-
       <div className="flex justify-between mb-4">
         <button
           onClick={() => router.push("/home2")}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg shadow hover:bg-gray-300"
         >
-          Thoát
+          ← Quay lại
         </button>
         <button
           onClick={() => alert("Bạn đã báo cáo sản phẩm!")}
-          className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+          className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
         >
-          Báo cáo sản phẩm
+          🚩 Báo cáo
         </button>
       </div>
 
       {/* Thông tin sản phẩm */}
-      <div className="bg-gray-100 p-6 rounded-lg shadow">
-        <div className="flex gap-6">
+      <div className="bg-white p-6 rounded-xl shadow-lg">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Ảnh sản phẩm */}
           <div className="w-1/3 cursor-pointer">
             <img
               src={product.hinh_anh?.[0]?.url || "/placeholder.png"}
               alt={product.ten_san_pham}
-              className="w-full h-64 object-cover rounded hover:scale-105 transition"
+              className="w-60 h-70 object-cover rounded-md"
               onClick={() =>
                 setZoomImage(product.hinh_anh?.[0]?.url || "/placeholder.png")
               }
@@ -152,29 +139,21 @@ export default function ProductDetailsPage() {
 
           {/* Chi tiết */}
           <div className="flex-1 space-y-3">
-            <h1 className="text-2xl font-bold">{product.ten_san_pham}</h1>
-            <p>
-              <b>Giá:</b> {product.gia.toLocaleString()} VND
+            <h1 className="text-2xl font-bold text-blue-700">
+              {product.ten_san_pham}
+            </h1>
+            <p className="text-xl text-red-600 font-bold">
+              {product.gia.toLocaleString()} VND
             </p>
             <p>
-              <b>Mô tả:</b> {product.mo_ta}
+              <b>Mô tả:</b> {product.mo_ta || "Không có mô tả"}
             </p>
             <p>
-              <b>Người bán:</b> {product.nguoi_dung?.ho_ten || "Không rõ"}
-            </p>
-            <p>
-              <b>Số lượng:</b> {product.so_luong_ton ?? 0}
+              <b>Số lượng tồn:</b> {product.so_luong_ton ?? 0}
             </p>
             <p>
               <b>Danh mục:</b> {product.danh_muc?.ten_danh_muc}
             </p>
-            <p>
-              <b>Tình trạng sản phẩm:</b>{" "}
-              <span className="text-blue-600 font-semibold">
-                {product.tinh_trang || "Không rõ"}
-              </span>
-            </p>
-
             <p>
               <b>Trạng thái:</b>{" "}
               {product.so_luong_ton > 0 ? (
@@ -185,21 +164,21 @@ export default function ProductDetailsPage() {
             </p>
 
             {/* Nút giỏ hàng và mua ngay */}
-            <div className="flex gap-4 mt-4">
+            <div className="flex gap-4 mt-6">
               <button
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-base bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition disabled:opacity-50"
                 disabled={loadingCart}
                 onClick={() => addToCart(false)}
               >
-                <ShoppingCart size={16} /> Giỏ
+                <ShoppingCart size={18} /> Thêm giỏ
               </button>
 
               <button
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-base bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                 disabled={loadingCart || product.so_luong_ton <= 0}
                 onClick={() => addToCart(true)}
               >
-                <Zap size={16} /> Mua ngay
+                <Zap size={18} /> Mua ngay
               </button>
             </div>
           </div>
@@ -207,26 +186,26 @@ export default function ProductDetailsPage() {
       </div>
 
       {/* Thông tin shop */}
-      <div className="bg-gray-100 p-6 rounded-lg shadow">
+      <div className="bg-white p-6 rounded-xl shadow-lg">
         <div className="flex items-center gap-4">
           <img
             src={product.nguoi_ban?.avatar || "/default-avatar.png"}
             alt="Avatar người bán"
-            className="w-16 h-16 rounded-full object-cover border border-gray-300"
+            className="w-16 h-16 rounded-full object-cover border"
           />
           <div className="flex-1">
             <h2 className="text-lg font-bold">
               {product.nguoi_ban?.ho_ten || "Người bán"}
             </h2>
             <p className="text-sm text-gray-600">
-              Email: {product.nguoi_ban?.email || "Chưa có email"}
+              📧 {product.nguoi_ban?.email || "Chưa có email"}
             </p>
           </div>
           <div className="flex gap-2">
-            <button className="px-3 py-1 border border-gray-400 rounded hover:bg-gray-200">
+            <button className="px-3 py-1 border border-gray-400 rounded-lg hover:bg-gray-100">
               Liên hệ
             </button>
-            <button className="px-3 py-1 border border-gray-400 rounded hover:bg-gray-200">
+            <button className="px-3 py-1 border border-gray-400 rounded-lg hover:bg-gray-100">
               Xem Shop
             </button>
           </div>
@@ -234,8 +213,8 @@ export default function ProductDetailsPage() {
       </div>
 
       {/* Đánh giá + Bình luận */}
-      <div className="bg-gray-100 p-6 rounded-lg shadow">
-        <h3 className="font-bold mb-3">Đánh giá chất lượng sản phẩm</h3>
+      <div className="bg-white p-6 rounded-xl shadow-lg">
+        <h3 className="font-bold mb-3 text-lg">Đánh giá sản phẩm</h3>
 
         {/* Rating sao */}
         <div className="flex mb-3">
@@ -243,7 +222,7 @@ export default function ProductDetailsPage() {
             <span
               key={star}
               className={`cursor-pointer text-2xl ${
-                star <= rating ? "text-yellow-500" : "text-gray-400"
+                star <= rating ? "text-yellow-400" : "text-gray-300"
               }`}
               onClick={() => setRating(star)}
             >
@@ -254,16 +233,16 @@ export default function ProductDetailsPage() {
 
         {/* Nhập bình luận */}
         <textarea
-          className="w-full border border-gray-300 rounded p-2 mb-3 bg-white text-black"
+          className="w-full border border-gray-300 rounded-lg p-3 mb-3 bg-white text-black focus:ring-2 focus:ring-blue-400"
           rows="3"
-          placeholder="Bình luận"
+          placeholder="Nhập bình luận..."
           value={comment}
           onChange={(e) => setComment(e.target.value)}
         ></textarea>
 
         <button
           onClick={handleSubmitReview}
-          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+          className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
         >
           Gửi đánh giá
         </button>
@@ -276,7 +255,7 @@ export default function ProductDetailsPage() {
           {reviews.map((rv, idx) => (
             <div
               key={idx}
-              className="flex items-start gap-3 p-3 bg-white rounded border"
+              className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border"
             >
               <img
                 src="/default-avatar.png"
@@ -287,7 +266,7 @@ export default function ProductDetailsPage() {
                 <p className="font-semibold">{rv.user}</p>
                 <p className="text-yellow-500">
                   {"★".repeat(rv.rating)}
-                  <span className="text-gray-400">
+                  <span className="text-gray-300">
                     {"★".repeat(5 - rv.rating)}
                   </span>
                 </p>
@@ -307,7 +286,7 @@ export default function ProductDetailsPage() {
           <img
             src={zoomImage}
             alt="Zoom sản phẩm"
-            className="max-w-4xl max-h-[90vh] rounded shadow-lg"
+            className="max-w-4xl max-h-[90vh] rounded-lg shadow-lg"
           />
         </div>
       )}

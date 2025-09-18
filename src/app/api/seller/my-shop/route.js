@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
 
-// ⚙️ Config Cloudinary (lấy từ .env)
+// ⚙️ Config Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -37,7 +37,7 @@ async function authSeller(req) {
   }
 }
 
-// 📌 Lấy tất cả sản phẩm của seller
+// 📌 GET: Lấy tất cả sản phẩm của seller
 export async function GET(req) {
   const auth = await authSeller(req);
   if (auth.error) {
@@ -74,7 +74,7 @@ export async function GET(req) {
   }
 }
 
-// 📌 Seller xóa sản phẩm (chỉ khi chưa duyệt)
+// 📌 DELETE: Seller xóa sản phẩm (chỉ khi chưa duyệt)
 export async function DELETE(req) {
   const auth = await authSeller(req);
   if (auth.error) {
@@ -111,9 +111,15 @@ export async function DELETE(req) {
     }
 
     for (const img of product.san_pham_anh) {
-      if (img.public_id) {
+      if (img.url) {
         try {
-          await cloudinary.uploader.destroy(img.public_id);
+          // Tách public_id từ URL
+          const parts = img.url.split("/");
+          const fileName = parts[parts.length - 1]; // km2exet1v0nzot7gozqz.jpg
+          const folder = parts[parts.length - 2]; // products
+          const publicId = `${folder}/${fileName.split(".")[0]}`;
+
+          await cloudinary.uploader.destroy(publicId);
         } catch (err) {
           console.warn("Không xoá được ảnh trên Cloudinary:", err);
         }
@@ -121,7 +127,6 @@ export async function DELETE(req) {
     }
 
     await prisma.san_pham_anh.deleteMany({ where: { ma_san_pham: id } });
-
     await prisma.san_pham.delete({ where: { ma_san_pham: id } });
 
     return NextResponse.json({

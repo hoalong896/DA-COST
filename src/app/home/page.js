@@ -10,7 +10,7 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-black">
+    <div className="min-h-screen flex flex-col bg-[#f5fbff] text-gray-900">
       <Header />
 
       <main className="flex-1">

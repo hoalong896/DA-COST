@@ -26,7 +26,7 @@ export default function DanhMuc({ selected, onSelect }) {
         onClick={() => onSelect(null)}
         className={`px-4 py-2 rounded-lg font-medium transition-all ${
           selected === null
-            ? "bg-blue-600 text-white"
+            ? "bg-orange-600 text-white"
             : "bg-white text-gray-800 hover:bg-gray-200"
         }`}
       >
@@ -43,7 +43,7 @@ export default function DanhMuc({ selected, onSelect }) {
             }
             className={`px-4 py-2 rounded-lg font-medium flex items-center gap-1 transition-all ${
               selected === dm.ma_danh_muc
-                ? "bg-blue-600 text-white"
+                ? "bg-orange-600 text-white"
                 : "bg-white text-gray-800 hover:bg-gray-200"
             }`}
           >
@@ -60,7 +60,7 @@ export default function DanhMuc({ selected, onSelect }) {
                   onClick={() => onSelect(child.ma_danh_muc)}
                   className={`px-4 py-2 text-left whitespace-nowrap rounded-lg transition-all ${
                     selected === child.ma_danh_muc
-                      ? "bg-blue-500 text-white"
+                      ? "bg-orange-500 text-white"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
