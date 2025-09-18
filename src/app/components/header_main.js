@@ -30,7 +30,7 @@ export default function Header() {
   };
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 bg-purple-300 shadow-md relative">
+    <header className="flex items-center justify-between px-6 py-4 bg-sky-200 shadow-md relative">
       {/* Logo */}
       <div className="flex items-center space-x-2 cursor-pointer">
         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-purple-500 font-bold text-xl">
@@ -51,7 +51,19 @@ export default function Header() {
           placeholder="Search..."
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="w-full pl-10 pr-3 py-2 border-black rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm"
+          className="
+                  w-full pl-10 pr-3 py-2 
+                  border-2 border-blue-400 
+                  rounded-md 
+                  focus:outline-none 
+                  focus:ring-4 focus:ring-blue-300 
+                  text-sm
+                  bg-blue-50
+                  shadow-md
+                  transition-all
+                  duration-200
+                  hover:border-blue-500
+                "
         />
       </form>
 

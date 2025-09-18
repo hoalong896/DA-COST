@@ -8,7 +8,6 @@ export default function PaymentPage() {
   const [total, setTotal] = useState(0);
   const [phuongThuc, setPhuongThuc] = useState("COD");
 
-  // Cho phép chỉnh sửa
   const [hoTen, setHoTen] = useState("");
   const [soDienThoai, setSoDienThoai] = useState("");
   const [diaChi, setDiaChi] = useState("");
@@ -22,42 +21,65 @@ export default function PaymentPage() {
       return;
     }
 
-    //  Lấy thông tin user
     fetch("/api/auth/profile", {
       headers: { Authorization: "Bearer " + token },
     })
       .then((res) => res.json())
       .then((data) => {
+        if (!data.user) {
+          alert("Không thể lấy thông tin người dùng. Vui lòng đăng nhập lại.");
+          router.push("/login");
+          return;
+        }
         setUser(data.user);
         setHoTen(data.user.ho_ten || "");
         setSoDienThoai(data.user.so_dien_thoai || "");
         setDiaChi(data.user.dia_chi || "");
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy thông tin user:", err);
+        alert("Lỗi lấy thông tin người dùng.");
+        router.push("/login");
       });
 
-    //  Lấy dữ liệu checkout (giỏ hàng hoặc mua ngay)
     const storedItems = JSON.parse(localStorage.getItem("checkoutItems")) || [];
     const storedTotal = Number(localStorage.getItem("checkoutTotal")) || 0;
-    const checkoutMode = localStorage.getItem("checkoutMode"); // "cart" | "buyNow"
-
-    if (checkoutMode === "buyNow") {
-      //  Chỉ hiển thị sản phẩm vừa chọn ở trang chủ
-      setItems(storedItems);
-      setTotal(storedTotal);
-    } else {
-      // Mặc định: hiển thị danh sách từ giỏ hàng
-      setItems(storedItems);
-      setTotal(storedTotal);
-    }
+    setItems(storedItems);
+    setTotal(storedTotal);
   }, [router]);
 
   async function handlePayment() {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
+    if (!items.length) {
+      alert("Không có sản phẩm hợp lệ để thanh toán!");
+      return;
+    }
 
+    const chiTiet = items
+      .map((sp) => {
+        const maSanPham = sp.san_pham?.ma_san_pham || sp.ma_san_pham;
+        if (!maSanPham) return null;
+        const donGia = sp.san_pham?.gia || sp.don_gia || 0;
+        const soLuong = Number(sp.so_luong) || 1;
+        return {
+          ma_san_pham: Number(maSanPham),
+          so_luong: soLuong,
+          don_gia: Number(donGia),
+        };
+      })
+      .filter(Boolean);
+
+    if (!chiTiet.length) {
+      alert("Không có sản phẩm hợp lệ để thanh toán!");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    try {
       const res = await fetch("/api/home/shop-cart/payment", {
         method: "POST",
         headers: {
@@ -70,17 +92,11 @@ export default function PaymentPage() {
           ho_ten: hoTen,
           so_dien_thoai: soDienThoai,
           dia_chi: diaChi,
-          chi_tiet: items.map((sp) => ({
-            ma_san_pham: sp.san_pham.ma_san_pham,
-            so_luong: sp.so_luong,
-            don_gia: sp.san_pham.gia,
-            ma_nguoi_ban: sp.san_pham.ma_nguoi_ban,
-          })),
+          chi_tiet: chiTiet,
         }),
       });
 
       const data = await res.json();
-
       console.log("Payment API response:", res.status, data);
 
       if (!res.ok) {
@@ -94,9 +110,7 @@ export default function PaymentPage() {
 
       alert("Thanh toán thành công!");
       window.dispatchEvent(
-        new CustomEvent("add-notification", {
-          detail: " Mua ngay thành công",
-        })
+        new CustomEvent("add-notification", { detail: "Mua hàng thành công" })
       );
       router.push("/home2/shop-cart/payment/success");
     } catch (err) {
@@ -110,7 +124,6 @@ export default function PaymentPage() {
     <div className="p-6 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Thanh toán</h1>
 
-      {/* Thông tin người mua */}
       <div className="bg-white shadow rounded p-4 mb-6">
         <h2 className="font-semibold mb-2">Thông tin người mua</h2>
         <div className="flex flex-col gap-3">
@@ -137,26 +150,35 @@ export default function PaymentPage() {
         </div>
       </div>
 
-      {/* Sản phẩm */}
       <div className="bg-white shadow rounded p-4 mb-6">
         <h2 className="font-semibold mb-2">Sản phẩm</h2>
-        {items.map((sp) => (
-          <div
-            key={sp.ma_ct || sp.san_pham.ma_san_pham}
-            className="flex justify-between border-b py-2 text-sm"
-          >
-            <span>
-              {sp.san_pham.ten_san_pham} × {sp.so_luong}
-            </span>
-            <span>{(sp.so_luong * sp.san_pham.gia).toLocaleString()}₫</span>
-          </div>
-        ))}
+        {items.length ? (
+          items.map((sp) => (
+            <div
+              key={sp.ma_ct || sp.san_pham?.ma_san_pham || sp.ma_san_pham}
+              className="flex justify-between border-b py-2 text-sm"
+            >
+              <span>
+                {sp.san_pham?.ten_san_pham || "Sản phẩm không xác định"} ×{" "}
+                {sp.so_luong || 1}
+              </span>
+              <span>
+                {(
+                  Number(sp.so_luong) *
+                  Number(sp.san_pham?.gia || sp.don_gia || 0)
+                ).toLocaleString()}
+                ₫
+              </span>
+            </div>
+          ))
+        ) : (
+          <div>Không có sản phẩm nào trong giỏ hàng.</div>
+        )}
         <div className="font-bold text-right mt-2">
           Tổng: {Number(total).toLocaleString()}₫
         </div>
       </div>
 
-      {/* Phương thức thanh toán */}
       <div className="bg-white shadow rounded p-4 mb-6">
         <h2 className="font-semibold mb-2">Phương thức thanh toán</h2>
         <select

@@ -3,8 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+enum TinhTrang {
+  MOI     // Chưa sử dụng
+  TRUNG   // Đã sử dụng dưới 5 lần
+  CU      // Đã qua sử dụng
 }
 
 model bao_cao {
@@ -38,9 +43,9 @@ model chi_tiet_don_hang {
   don_gia      Float
   thanh_tien   Float
   ma_nguoi_ban Int
+  don_hang     don_hang   @relation(fields: [ma_don_hang], references: [ma_don_hang], onDelete: NoAction, onUpdate: NoAction)
   nguoi_dung   nguoi_dung @relation(fields: [ma_nguoi_ban], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
   san_pham     san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
-  don_hang     don_hang   @relation(fields: [ma_don_hang], references: [ma_don_hang], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model chi_tiet_gio_hang {
@@ -49,8 +54,8 @@ model chi_tiet_gio_hang {
   ma_san_pham Int
   so_luong    Int
   ngay_tao    DateTime? @default(now())
-  san_pham    san_pham  @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
   gio_hang    gio_hang  @relation(fields: [ma_gio_hang], references: [ma_gio_hang], onDelete: NoAction, onUpdate: NoAction)
+  san_pham    san_pham  @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model danh_gia {
@@ -65,19 +70,16 @@ model danh_gia {
 }
 
 model danh_muc {
-  ma_danh_muc  Int         @id @default(autoincrement())
+  ma_danh_muc  Int        @id @default(autoincrement())
   ten_danh_muc String
   mo_ta        String?
-  hien_thi     Boolean?    @default(true)
-  ngay_tao     DateTime?   @default(now())
+  hien_thi     Boolean?   @default(true)
+  ngay_tao     DateTime?  @default(now())
+  parent_id    Int?
+  parent       danh_muc?  @relation("CategoryHierarchy", fields: [parent_id], references: [ma_danh_muc])
+  children     danh_muc[] @relation("CategoryHierarchy")
   san_pham     san_pham[]
-
-  // quan hệ cha - con
-  parent_id Int?
-  parent    danh_muc?     @relation("CategoryHierarchy", fields: [parent_id], references: [ma_danh_muc])
-  children  danh_muc[]    @relation("CategoryHierarchy")
 }
-
 
 model don_hang {
   ma_don_hang       Int                 @id @default(autoincrement())
@@ -100,16 +102,16 @@ model gio_hang {
 }
 
 model nguoi_dung {
-  ma_nguoi_dung          Int       @id @default(autoincrement())
+  ma_nguoi_dung          Int                      @id @default(autoincrement())
   ho_ten                 String
-  email                  String    @unique
+  email                  String                   @unique
   mat_khau               String
-  vai_tro                String?   @default("Khach")
+  vai_tro                String?                  @default("Khach")
   dia_chi                String?
   so_dien_thoai          String?
-  trang_thai             Boolean?  @default(true)
-  ngay_tao               DateTime? @default(now())
-  ngay_cap_nhat          DateTime? @default(now())
+  trang_thai             Boolean?                 @default(true)
+  ngay_tao               DateTime?                @default(now())
+  ngay_cap_nhat          DateTime?                @default(now())
   resetPasswordToken     String?
   resetPasswordExpire    DateTime?
   avatar                 String?
@@ -130,8 +132,8 @@ model nhat_ky_duyet_san_pham {
   ly_do         String?
   thuc_hien_boi Int
   thuc_hien_luc DateTime?  @default(now())
-  nguoi_dung    nguoi_dung @relation(fields: [thuc_hien_boi], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
   san_pham      san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
+  nguoi_dung    nguoi_dung @relation(fields: [thuc_hien_boi], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model san_pham {
@@ -145,6 +147,7 @@ model san_pham {
   duyet_trang_thai       String?                  @default("ChoDuyet")
   ngay_dang              DateTime?                @default(now())
   ngay_cap_nhat          DateTime?                @default(now())
+  tinh_trang             TinhTrang                @default(MOI)  
   bao_cao                bao_cao[]
   cau_hoi                cau_hoi[]
   chi_tiet_don_hang      chi_tiet_don_hang[]

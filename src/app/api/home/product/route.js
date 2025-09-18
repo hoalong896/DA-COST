@@ -32,8 +32,9 @@ export async function GET(req) {
         gia: p.gia,
         mo_ta: p.mo_ta,
         so_luong: p.so_luong,
+        tinh_trang: p.tinh_trang,
         ten_danh_muc: p.danh_muc?.ten_danh_muc || null,
-        hinh_anh: p.san_pham_anh[0]?.url || null, // lấy ảnh đầu tiên
+        hinh_anh: p.san_pham_anh[0]?.url || null,
       }))
     );
   } catch (error) {

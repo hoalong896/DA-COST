@@ -15,13 +15,13 @@ export async function POST(req) {
     const mo_ta = formData.get("mo_ta");
     const ma_danh_muc = parseInt(formData.get("ma_danh_muc") || 1);
     const so_luong_ton = parseInt(formData.get("so_luong_ton") || "0");
+    const tinh_trang = formData.get("tinh_trang");
     const file = formData.get("image");
 
-    if (!ten_san_pham || isNaN(gia) || isNaN(so_luong_ton)) {
+    if (!ten_san_pham || isNaN(gia) || isNaN(so_luong_ton) || !tinh_trang) {
       return NextResponse.json({ message: "Thiếu dữ liệu!" }, { status: 400 });
     }
 
-    // 🔑 Lấy token từ header
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -41,7 +41,6 @@ export async function POST(req) {
       );
     }
 
-    // 1️⃣ Tạo sản phẩm (mặc định trạng thái chờ duyệt)
     const newProduct = await prisma.san_pham.create({
       data: {
         ten_san_pham,
@@ -50,17 +49,16 @@ export async function POST(req) {
         so_luong_ton,
         ma_danh_muc,
         ma_nguoi_ban: userId,
+        tinh_trang,
         duyet_trang_thai: "ChoDuyet",
       },
     });
 
-    // 2️⃣ Lưu file ảnh (nếu có)
     let url = null;
-    if (file) {
+    if (file && file.size > 0) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      // đặt tên file an toàn
       const filename = `${Date.now()}-${Math.random()
         .toString(36)
         .substring(2, 8)}.jpg`;
@@ -69,7 +67,6 @@ export async function POST(req) {
       await writeFile(uploadPath, buffer);
       url = `/uploads/${filename}`;
 
-      // 3️⃣ Lưu ảnh vào bảng san_pham_anh
       await prisma.san_pham_anh.create({
         data: {
           ma_san_pham: newProduct.ma_san_pham,

@@ -15,6 +15,7 @@ export default function ThemSanPhamPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [tinhTrang, setTinhTrang] = useState("");
 
   // lấy danh mục
   useEffect(() => {
@@ -50,8 +51,8 @@ export default function ThemSanPhamPage() {
       formData.append("gia", gia);
       formData.append("so_luong_ton", soLuong);
       formData.append("mo_ta", moTa);
+      formData.append("tinh_trang", tinhTrang);
 
-      // ưu tiên con, nếu không chọn con thì mới lưu cha
       const danhMucId = danhMucCon || danhMucCha;
       formData.append("ma_danh_muc", danhMucId);
 
@@ -67,14 +68,14 @@ export default function ThemSanPhamPage() {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage("✅ Thêm sản phẩm thành công!");
+        setMessage(" Thêm sản phẩm thành công!");
         setTimeout(() => router.push("/seller/my-shop"), 1200);
       } else {
-        setMessage(data.message || "❌ Thêm sản phẩm thất bại!");
+        setMessage(data.message || " Thêm sản phẩm thất bại!");
       }
     } catch (err) {
       console.error("Lỗi:", err);
-      setMessage("❌ Lỗi server!");
+      setMessage(" Lỗi server!");
     } finally {
       setLoading(false);
     }
@@ -99,7 +100,6 @@ export default function ThemSanPhamPage() {
               className="w-full border px-3 py-2 rounded mt-1"
             />
           </div>
-
           {/* Giá */}
           <div>
             <label className="font-semibold">Giá:</label>
@@ -111,7 +111,6 @@ export default function ThemSanPhamPage() {
               className="w-full border px-3 py-2 rounded mt-1"
             />
           </div>
-
           {/* Số lượng tồn */}
           <div>
             <label className="font-semibold">Số lượng:</label>
@@ -123,7 +122,6 @@ export default function ThemSanPhamPage() {
               className="w-full border px-3 py-2 rounded mt-1"
             />
           </div>
-
           {/* Mô tả */}
           <div>
             <label className="font-semibold">Mô tả:</label>
@@ -134,7 +132,6 @@ export default function ThemSanPhamPage() {
               className="w-full border px-3 py-2 rounded mt-1"
             />
           </div>
-
           {/* Danh mục */}
           <div>
             <label className="font-semibold">Danh mục:</label>
@@ -177,6 +174,18 @@ export default function ThemSanPhamPage() {
                 </select>
               )}
           </div>
+          {/* Tình trạng */}
+          <select
+            name="tinh_trang"
+            value={tinhTrang}
+            onChange={(e) => setTinhTrang(e.target.value)}
+            required
+          >
+            <option value="">-- Chọn tình trạng --</option>
+            <option value="MOI">Mới</option>
+            <option value="TRUNG">Đã qua sử dụng dưới 5 lần</option>
+            <option value="CU">Đã qua sử dụng</option>
+          </select>
 
           {/* Ảnh sản phẩm */}
           <div>
@@ -188,7 +197,6 @@ export default function ThemSanPhamPage() {
               className="w-full border px-3 py-2 rounded mt-1"
             />
           </div>
-
           {/* Preview ảnh */}
           {preview && (
             <div className="mt-3">
@@ -200,7 +208,6 @@ export default function ThemSanPhamPage() {
               />
             </div>
           )}
-
           {/* Submit */}
           <button
             type="submit"
@@ -215,7 +222,7 @@ export default function ThemSanPhamPage() {
         {message && (
           <p
             className={`mt-4 text-center ${
-              message.includes("✅")
+              message.includes("")
                 ? "text-green-600 font-semibold"
                 : "text-red-600"
             }`}
@@ -229,7 +236,7 @@ export default function ThemSanPhamPage() {
           onClick={() => router.push("/seller/my-shop")}
           className="w-full mt-4 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
         >
-          ⬅ Quay lại gian hàng
+          Quay lại gian hàng
         </button>
       </div>
     </div>

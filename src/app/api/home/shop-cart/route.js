@@ -28,7 +28,7 @@ export async function GET(req) {
       );
     }
 
-    const userId = payload.id; // hoặc payload.userId tùy lúc login bạn set
+    const userId = payload.id;
 
     const cart = await prisma.gio_hang.findFirst({
       where: { ma_nguoi_mua: userId },
@@ -41,9 +41,29 @@ export async function GET(req) {
       },
     });
 
-    return NextResponse.json(cart || { chi_tiet_gio_hang: [] });
+    if (!cart) {
+      return NextResponse.json({ chi_tiet_gio_hang: [] });
+    }
+
+    const mappedCart = {
+      ...cart,
+      chi_tiet_gio_hang: cart.chi_tiet_gio_hang.map((ct) => ({
+        ma_ct: ct.ma_ct,
+        so_luong: ct.so_luong,
+        ngay_tao: ct.ngay_tao,
+        san_pham: {
+          id: ct.san_pham.ma_san_pham,
+          ten_san_pham: ct.san_pham.ten_san_pham,
+          gia: ct.san_pham.gia,
+          tinh_trang: ct.san_pham.tinh_trang,
+          san_pham_anh: ct.san_pham.san_pham_anh || [],
+        },
+      })),
+    };
+
+    return NextResponse.json(mappedCart);
   } catch (err) {
-    console.error("❌ Lỗi GET giỏ hàng:", err);
+    console.error("Lỗi GET giỏ hàng:", err);
     return NextResponse.json(
       { message: "Không thể tải giỏ hàng" },
       { status: 500 }

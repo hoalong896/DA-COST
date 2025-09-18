@@ -141,13 +141,11 @@ export default function ProductDetailsPage() {
           {/* Ảnh sản phẩm */}
           <div className="w-1/3 cursor-pointer">
             <img
-              src={product.san_pham_anh?.[0]?.url || "/placeholder.png"}
+              src={product.hinh_anh?.[0]?.url || "/placeholder.png"}
               alt={product.ten_san_pham}
               className="w-full h-64 object-cover rounded hover:scale-105 transition"
               onClick={() =>
-                setZoomImage(
-                  product.san_pham_anh?.[0]?.url || "/placeholder.png"
-                )
+                setZoomImage(product.hinh_anh?.[0]?.url || "/placeholder.png")
               }
             />
           </div>
@@ -171,6 +169,13 @@ export default function ProductDetailsPage() {
               <b>Danh mục:</b> {product.danh_muc?.ten_danh_muc}
             </p>
             <p>
+              <b>Tình trạng sản phẩm:</b>{" "}
+              <span className="text-blue-600 font-semibold">
+                {product.tinh_trang || "Không rõ"}
+              </span>
+            </p>
+
+            <p>
               <b>Trạng thái:</b>{" "}
               {product.so_luong_ton > 0 ? (
                 <span className="text-green-600 font-semibold">Còn hàng</span>
@@ -179,7 +184,7 @@ export default function ProductDetailsPage() {
               )}
             </p>
 
-            {/* ✅ Nút giỏ hàng và mua ngay */}
+            {/* Nút giỏ hàng và mua ngay */}
             <div className="flex gap-4 mt-4">
               <button
                 className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
@@ -205,16 +210,16 @@ export default function ProductDetailsPage() {
       <div className="bg-gray-100 p-6 rounded-lg shadow">
         <div className="flex items-center gap-4">
           <img
-            src={product.nguoi_dung?.avatar || "/default-avatar.png"}
+            src={product.nguoi_ban?.avatar || "/default-avatar.png"}
             alt="Avatar người bán"
             className="w-16 h-16 rounded-full object-cover border border-gray-300"
           />
           <div className="flex-1">
             <h2 className="text-lg font-bold">
-              {product.nguoi_dung?.ho_ten || "Người bán"}
+              {product.nguoi_ban?.ho_ten || "Người bán"}
             </h2>
             <p className="text-sm text-gray-600">
-              Email: {product.nguoi_dung?.email || "Chưa có email"}
+              Email: {product.nguoi_ban?.email || "Chưa có email"}
             </p>
           </div>
           <div className="flex gap-2">

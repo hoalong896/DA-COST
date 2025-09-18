@@ -160,7 +160,7 @@ export default function ProfilePage() {
             <div>
               <label className="block font-semibold">Số điện thoại</label>
               <input
-                type="text"
+                type="number"
                 value={user.so_dien_thoai || ""}
                 onChange={(e) =>
                   setUser({ ...user, so_dien_thoai: e.target.value })

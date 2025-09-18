@@ -55,7 +55,8 @@ export async function GET(req) {
       ten_san_pham: sp.ten_san_pham,
       gia: sp.gia,
       mo_ta: sp.mo_ta,
-      duyet_trang_thai: sp.duyet_trang_thai, // 👈 thêm trạng thái duyệt
+      duyet_trang_thai: sp.duyet_trang_thai,
+      tinh_trang: sp.tinh_trang,
       ngay_dang: sp.ngay_dang,
       hinh_anh: sp.san_pham_anh[0]?.url || null,
     }));
