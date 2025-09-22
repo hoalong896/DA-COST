@@ -9,7 +9,7 @@ export async function GET(req) {
     const category = searchParams.get("category");
 
     const where = {
-      duyet_trang_thai: "DaDuyet", // 👈 chỉ lấy sản phẩm đã duyệt
+      duyet_trang_thai: "DaDuyet",
     };
 
     if (category) {
