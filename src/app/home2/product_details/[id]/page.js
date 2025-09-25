@@ -115,7 +115,7 @@ export default function ProductDetailsPage() {
           ← Quay lại
         </button>
         <button
-          onClick={() => alert("Bạn đã báo cáo sản phẩm!")}
+          onClick={() => router.push("/home2/report")}
           className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
         >
           🚩 Báo cáo

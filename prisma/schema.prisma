@@ -17,6 +17,7 @@ model bao_cao {
   ma_san_pham   Int
   ma_nguoi_dung Int
   ly_do         String
+  hinh_anh      String[]
   trang_thai    String?    @default("ChuaXuLy")
   ngay_tao      DateTime?  @default(now())
   nguoi_dung    nguoi_dung @relation(fields: [ma_nguoi_dung], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
@@ -178,3 +179,4 @@ model thanh_toan {
   ngay_tao      DateTime? @default(now())
   don_hang      don_hang  @relation(fields: [ma_don_hang], references: [ma_don_hang], onDelete: NoAction, onUpdate: NoAction)
 }
+
