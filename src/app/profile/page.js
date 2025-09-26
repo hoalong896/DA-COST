@@ -189,7 +189,7 @@ export default function ProfilePage() {
                 Cập nhật
               </button>
               <button
-                onClick={() => router.push("/home2")}
+                onClick={() => router.back()}
                 className="px-10 py-2 bg-blue-500 hover:bg-orange-600 rounded font-semibold text-white"
               >
                 Quay lại

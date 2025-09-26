@@ -35,7 +35,11 @@ export default function DangNhapPage() {
         setTimeout(() => {
           if (data.user.vai_tro === "Admin") {
             router.push("/admin/home");
-          } else {
+          }
+           else if (data.user.vai_tro === "NGUOI_BAN") {
+            router.push("/seller/home");
+           }
+          else {
             router.push("/home2");
           }
         }, 1500);

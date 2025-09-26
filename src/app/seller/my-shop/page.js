@@ -21,7 +21,7 @@ export default function MyShopPage() {
 
     if (role !== "NGUOI_BAN") {
       alert("Chỉ người bán mới vào được gian hàng!");
-      router.push("/home2");
+      router.push("/seller/home");
       return;
     }
 
@@ -111,7 +111,7 @@ export default function MyShopPage() {
             <span>Thêm sản phẩm</span>
           </button>
           <button
-            onClick={() => router.push("/home2")}
+            onClick={() => router.push("/seller/home")}
             className="flex items-center space-x-2 bg-gray-400 text-white px-5 py-2 rounded-xl hover:bg-gray-500 transition shadow"
           >
             <span>Quay lại</span>

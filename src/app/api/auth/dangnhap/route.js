@@ -24,6 +24,7 @@ export async function POST(req) {
       );
     }
 
+    // So sánh mật khẩu
     const isPasswordValid = await bcrypt.compare(password, user.mat_khau);
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -32,12 +33,13 @@ export async function POST(req) {
       );
     }
 
+    // Tạo token
     const token = jwt.sign(
       {
         id: user.ma_nguoi_dung,
         role: user.vai_tro,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || "defaultSecret",
       { expiresIn: "1d" }
     );
 

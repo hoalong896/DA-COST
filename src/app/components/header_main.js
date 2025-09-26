@@ -114,7 +114,7 @@ export default function Header() {
         {/* Người bán */}
         {role === "NGUOI_BAN" && (
           <Link
-            href="/seller/my-shop"
+            href="/seller/home"
             className="flex items-center space-x-1 bg-blue-300 px-3 py-2 rounded-md hover:bg-blue-400"
           >
             <Store size={20} />

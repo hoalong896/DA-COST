@@ -6,10 +6,10 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-enum TinhTrang {
-  MOI     // Chưa sử dụng
-  TRUNG   // Đã sử dụng dưới 5 lần
-  CU      // Đã qua sử dụng
+enum VaiTro {
+  KHACH
+  NGUOI_BAN
+  Admin
 }
 
 model bao_cao {
@@ -106,7 +106,6 @@ model nguoi_dung {
   ho_ten                 String
   email                  String                   @unique
   mat_khau               String
-  vai_tro                String?                  @default("Khach")
   dia_chi                String?
   so_dien_thoai          String?
   trang_thai             Boolean?                 @default(true)
@@ -115,6 +114,9 @@ model nguoi_dung {
   resetPasswordToken     String?
   resetPasswordExpire    DateTime?
   avatar                 String?
+  dia_chi_cua_hang       String?
+  ten_cua_hang           String?
+  vai_tro                VaiTro                   @default(KHACH)
   bao_cao                bao_cao[]
   cau_hoi                cau_hoi[]
   chi_tiet_don_hang      chi_tiet_don_hang[]
@@ -147,7 +149,7 @@ model san_pham {
   duyet_trang_thai       String?                  @default("ChoDuyet")
   ngay_dang              DateTime?                @default(now())
   ngay_cap_nhat          DateTime?                @default(now())
-  tinh_trang             TinhTrang                @default(MOI)  
+  tinh_trang             TinhTrang                @default(MOI)
   bao_cao                bao_cao[]
   cau_hoi                cau_hoi[]
   chi_tiet_don_hang      chi_tiet_don_hang[]
@@ -177,4 +179,16 @@ model thanh_toan {
   trang_thai    String?   @default("ChoXuLy")
   ngay_tao      DateTime? @default(now())
   don_hang      don_hang  @relation(fields: [ma_don_hang], references: [ma_don_hang], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum TinhTrang {
+  MOI
+  TRUNG
+  CU
+}
+
+enum VaiTro {
+  KHACH
+  NGUOI_BAN
+  Admin
 }
