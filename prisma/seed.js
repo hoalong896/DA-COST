@@ -12,7 +12,7 @@ async function main() {
       ho_ten: "Admin 1",
       email: "admin1@gmail.com",
       mat_khau: passwordHash,
-      vai_tro: "Admin", // đúng với enum
+      vai_tro: "Admin", 
     },
     {
       ho_ten: "Admin 2",

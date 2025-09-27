@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function ReportForm({ productId }) {
+export default function ReportFormPage({ params }) {
+  const { productId } = params; // dynamic route /report/[productId]
   const [product, setProduct] = useState(null);
   const [reason, setReason] = useState("");
   const [images, setImages] = useState([]);
@@ -12,7 +13,7 @@ export default function ReportForm({ productId }) {
 
   const router = useRouter();
 
-  // Kiểm tra login
+  // Kiểm tra đăng nhập
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
@@ -45,6 +46,7 @@ export default function ReportForm({ productId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!isLoggedIn) {
       router.push("/login");
       return;
@@ -68,7 +70,7 @@ export default function ReportForm({ productId }) {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Lỗi khi gửi báo cáo!");
-      setMessage(data.message);
+      setMessage(data.message || "Gửi báo cáo thành công!");
       setReason("");
       setImages([]);
     } catch (err) {
@@ -86,7 +88,7 @@ export default function ReportForm({ productId }) {
         {product ? (
           <div className="mb-4 border p-3 rounded-md bg-gray-100">
             <h4 className="font-semibold">{product.ten_san_pham}</h4>
-            <p>Giá: {product.gia} VND</p>
+            <p>Giá: {product.gia.toLocaleString()} VND</p>
             <p>Số lượng tồn: {product.so_luong_ton}</p>
             <p>Người bán: {product.nguoi_ban?.ho_ten || "Chưa có"}</p>
           </div>
