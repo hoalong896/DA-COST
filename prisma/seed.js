@@ -7,21 +7,22 @@ async function main() {
   const passwordHash = await bcrypt.hash("123456", 10);
 
   await prisma.nguoi_dung.createMany({
-    data: [
-      {
-        ho_ten: "Admin 1",
-        email: "admin1@gmail.com",
-        mat_khau: passwordHash,
-        vai_tro: "Admin",
-      },
-      {
-        ho_ten: "Admin 2",
-        email: "admin2@gmail.com",
-        mat_khau: passwordHash,
-        vai_tro: "Admin",
-      },
-    ],
-  });
+  data: [
+    {
+      ho_ten: "Admin 1",
+      email: "admin1@gmail.com",
+      mat_khau: passwordHash,
+      vai_tro: "Admin", // đúng với enum
+    },
+    {
+      ho_ten: "Admin 2",
+      email: "admin2@gmail.com",
+      mat_khau: passwordHash,
+      vai_tro: "Admin",
+    },
+  ],
+});
+
 
   console.log(" Đã thêm 2 admin!");
 }

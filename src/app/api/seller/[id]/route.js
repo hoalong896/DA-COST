@@ -5,9 +5,17 @@ const prisma = new PrismaClient();
 export async function GET(req, { params }) {
   const { id } = params;
 
+  const idNum = parseInt(id);
+  if (isNaN(idNum)) {
+    return new Response(
+      JSON.stringify({ error: "ID không hợp lệ" }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     const seller = await prisma.nguoi_dung.findUnique({
-      where: { ma_nguoi_dung: parseInt(id) },
+      where: { ma_nguoi_dung: idNum },
       select: {
         ma_nguoi_dung: true,
         ho_ten: true,
@@ -21,11 +29,14 @@ export async function GET(req, { params }) {
     });
 
     if (!seller) {
-      return new Response(JSON.stringify({ error: "Người bán không tồn tại" }), { status: 404 });
+      return new Response(
+        JSON.stringify({ error: "Người bán không tồn tại" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const products = await prisma.san_pham.findMany({
-      where: { ma_nguoi_ban: parseInt(id) },
+      where: { ma_nguoi_ban: idNum },
       select: {
         ma_san_pham: true,
         ten_san_pham: true,
@@ -35,12 +46,15 @@ export async function GET(req, { params }) {
       take: 4,
     });
 
-    return new Response(JSON.stringify({ seller, products }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ seller, products }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (err) {
     console.error(err);
-    return new Response(JSON.stringify({ error: "Lỗi server" }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: "Lỗi server" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 }

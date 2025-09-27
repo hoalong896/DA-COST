@@ -34,14 +34,16 @@ export async function GET(req, context) {
       ngay_dang: product.ngay_dang,
       ngay_cap_nhat: product.ngay_cap_nhat,
       danh_muc: product.danh_muc,
-      nguoi_ban: product.nguoi_dung
-        ? {
-            id: product.nguoi_dung.ma_nguoi_dung,
-            ho_ten: product.nguoi_dung.ho_ten,
-            email: product.nguoi_dung.email,
-            avatar: product.nguoi_dung.avatar || null,
-          }
-        : null,
+     nguoi_ban: product.nguoi_dung
+  ? {
+      id: product.nguoi_dung.ma_nguoi_dung,
+      ho_ten: product.nguoi_dung.ho_ten,
+      email: product.nguoi_dung.email,
+      avatar: product.nguoi_dung.avatar || null,
+      ten_cua_hang: product.nguoi_dung.ten_cua_hang || "Chưa có tên cửa hàng",
+    }
+  : null,
+
       hinh_anh: product.san_pham_anh.map((a) => ({
         id: a.ma_anh,
         url: a.url,

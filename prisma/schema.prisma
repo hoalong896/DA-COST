@@ -6,11 +6,6 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-enum VaiTro {
-  KHACH
-  NGUOI_BAN
-  Admin
-}
 
 model bao_cao {
   ma_bao_cao    Int        @id @default(autoincrement())

@@ -103,6 +103,12 @@ export default function AdminPage() {
         >
           <BarChart3 size={20} /> Thống kê
         </button>
+        <button
+          onClick={() => router.push("/admin/action/report")}
+          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-700"
+        >
+          <BarChart3 size={20} /> báo cáo
+        </button>
         <div className="mt-auto">
           <button
             onClick={handleLogout}

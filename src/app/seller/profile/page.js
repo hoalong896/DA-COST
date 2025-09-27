@@ -7,22 +7,23 @@ export default function SellerProfilePage({ params }) {
   const { id } = params;
   const [seller, setSeller] = useState(null);
   const [products, setProducts] = useState([]);
-  const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchSeller = async () => {
       try {
         const res = await fetch(`/api/seller/${id}`);
         const data = await res.json();
-        setSeller(data.seller || null);
-        setProducts(data.products || []);
 
-        // Mock câu hỏi tạm
-        setQuestions([
-          { ma_cau_hoi: 1, cau_hoi: "Sản phẩm này còn hàng không?", tra_loi: "Còn hàng", nguoi_dung: { ho_ten: "Nguyễn Văn A" } },
-          { ma_cau_hoi: 2, cau_hoi: "Giao hàng trong bao lâu?", tra_loi: null, nguoi_dung: { ho_ten: "Trần Thị B" } },
-        ]);
+        if (res.ok) {
+          setSeller(data.seller);
+          setProducts(data.products);
+        } else {
+          console.error(data.message || data.error);
+          setSeller(null);
+        }
       } catch (err) {
         console.error("Error fetch seller:", err);
         setSeller(null);
@@ -30,11 +31,12 @@ export default function SellerProfilePage({ params }) {
         setLoading(false);
       }
     };
+
     fetchSeller();
   }, [id]);
 
-  if (loading) return <p className="p-6 animate-pulse">⏳ Đang tải thông tin...</p>;
-  if (!seller) return <p className="p-6 text-red-500">❌ Không tìm thấy người bán.</p>;
+  if (loading) return <p className="p-6 animate-pulse"> Đang tải thông tin...</p>;
+  if (!seller) return <p className="p-6 text-red-500">Không tìm thấy người bán.</p>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-yellow-100 p-8">
@@ -98,33 +100,6 @@ export default function SellerProfilePage({ params }) {
           </div>
         ) : (
           <p className="text-gray-500">Người bán chưa có sản phẩm nào.</p>
-        )}
-      </section>
-
-      {/* Câu hỏi & trả lời */}
-      <section>
-        <h2 className="text-xl font-bold text-yellow-700 mb-6 flex items-center gap-2">
-          <Question size={20} /> <span>Câu hỏi từ khách hàng</span>
-        </h2>
-        {questions.length > 0 ? (
-          <div className="space-y-4">
-            {questions.map((q) => (
-              <motion.div
-                key={q.ma_cau_hoi}
-                whileHover={{ scale: 1.01 }}
-                className="bg-white p-4 rounded-2xl shadow border"
-              >
-                <p className="text-gray-800"><b>{q.nguoi_dung.ho_ten} hỏi:</b> {q.cau_hoi}</p>
-                {q.tra_loi ? (
-                  <p className="text-green-600 mt-2"><b>Người bán trả lời:</b> {q.tra_loi}</p>
-                ) : (
-                  <p className="text-gray-500 mt-2 italic">Chưa có câu trả lời</p>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500">Chưa có câu hỏi nào từ khách hàng.</p>
         )}
       </section>
     </div>

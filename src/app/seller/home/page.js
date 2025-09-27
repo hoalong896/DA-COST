@@ -8,21 +8,26 @@ export default function SellerHomePage() {
   const [sellerInfo, setSellerInfo] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("/api/seller/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Không thể lấy dữ liệu");
-        const data = await res.json();
-        setSellerInfo(data.seller);
-      } catch (err) {
-        console.error("Fetch error:", err);
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/seller/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        console.error("Fetch failed:", res.status, res.statusText, errData);
+        throw new Error("Không thể lấy dữ liệu");
       }
-    };
-    fetchData();
-  }, []);
+      const data = await res.json();
+      setSellerInfo(data.seller);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  };
+  fetchData();
+}, []);
+
 
   if (!sellerInfo) return <p className="p-6">Đang tải...</p>;
 

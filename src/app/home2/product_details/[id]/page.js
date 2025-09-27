@@ -115,7 +115,7 @@ export default function ProductDetailsPage() {
           ← Quay lại
         </button>
         <button
-          onClick={() => alert("Bạn đã báo cáo sản phẩm!")}
+          onClick={() => router.push("/home2/report")}
           className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
         >
           🚩 Báo cáo
@@ -194,18 +194,29 @@ export default function ProductDetailsPage() {
             className="w-16 h-16 rounded-full object-cover border"
           />
           <div className="flex-1">
-            <h2 className="text-lg font-bold">
-              {product.nguoi_ban?.ho_ten || "Người bán"}
-            </h2>
-            <p className="text-sm text-gray-600">
-              📧 {product.nguoi_ban?.email || "Chưa có email"}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button className="px-3 py-1 border border-gray-400 rounded-lg hover:bg-gray-100">
+  {/* Tên cửa hàng */}
+  <h2 className="text-lg font-bold">
+    {product.nguoi_ban?.ten_cua_hang || "Tên cửa hàng"}
+  </h2>
+
+  {/* Tên người bán */}
+  <p className="text-sm text-gray-700">
+    👤 {product.nguoi_ban?.ho_ten || "Tên người bán"}
+  </p>
+
+  {/* Email */}
+  <p className="text-sm text-gray-600">
+    📧 {product.nguoi_ban?.email || "Chưa có email"}
+  </p>
+</div>
+
+          <div className="flex gap-2" >
+            <button className="px-3 py-1 border border-gray-400 rounded-lg hover:bg-gray-100"
+            onClick={() => router.push("/home2/message")}>
               Liên hệ
             </button>
-            <button className="px-3 py-1 border border-gray-400 rounded-lg hover:bg-gray-100">
+            <button className="px-3 py-1 border border-gray-400 rounded-lg hover:bg-gray-100 "
+            onClick={() => router.push("/seller/profile")}>
               Xem Shop
             </button>
           </div>
