@@ -3,7 +3,7 @@ import "./globals.css";
 import LoadingProvider from "./components/LoadingProvider";
 import RouteLoadingHandler from "./components/RouteLoadingHandler";
 import ClientWrapper from "./components/ClientWrapper";
-import Chatbot from "./components/Chatbot";
+import Chatbot from "./components/chatbot";
 
 
 const geistSans = Geist({
