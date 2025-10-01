@@ -3,6 +3,8 @@ import "./globals.css";
 import LoadingProvider from "./components/LoadingProvider";
 import RouteLoadingHandler from "./components/RouteLoadingHandler";
 import ClientWrapper from "./components/ClientWrapper";
+import Chatbot from "./components/Chatbot";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +31,7 @@ export default function RootLayout({ children }) {
           <LoadingProvider>
             <RouteLoadingHandler />
             {children}
+            <Chatbot/>
           </LoadingProvider>
         </ClientWrapper>
       </body>

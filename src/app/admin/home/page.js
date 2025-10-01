@@ -74,7 +74,7 @@ export default function AdminPage() {
       <div className="w-64 bg-gray-900 text-white flex flex-col p-6">
         <h2 className="text-2xl font-bold mb-8 text-center">⚙ Admin Panel</h2>
         <button
-          onClick={() => router.push("/admin/users")}
+          onClick={() => router.push("/admin/action/user")}
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-700"
         >
           <Users size={20} /> Quản lý người dùng
@@ -98,7 +98,7 @@ export default function AdminPage() {
           <Boxes size={20} /> Quản lý danh mục
         </button>
         <button
-          onClick={() => router.push("/admin/orders")}
+          onClick={() => router.push("/admin/action/thongke")}
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-700"
         >
           <BarChart3 size={20} /> Thống kê
@@ -155,7 +155,7 @@ export default function AdminPage() {
         {/* Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <button
-            onClick={() => router.push("/admin/users")}
+            onClick={() => router.push("/admin/action/user")}
             className="p-6 bg-blue-500 text-white rounded-xl shadow hover:bg-blue-600"
           >
             Quản lý người dùng
@@ -179,7 +179,7 @@ export default function AdminPage() {
             Quản lý danh mục
           </button>
           <button
-            onClick={() => router.push("/admin/action/product")}
+            onClick={() => router.push("/admin/action/thongke")}
             className="p-6 bg-purple-500 text-white rounded-xl shadow hover:bg-purple-600"
           >
             Thống kê
