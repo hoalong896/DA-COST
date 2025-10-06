@@ -14,8 +14,8 @@ model bao_cao {
   ly_do         String
   trang_thai    String?    @default("ChuaXuLy")
   ngay_tao      DateTime?  @default(now())
-  nguoi_dung    nguoi_dung @relation(fields: [ma_nguoi_dung], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
   san_pham      san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
+  nguoi_dung    nguoi_dung @relation(fields: [ma_nguoi_dung], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model cau_hoi {
@@ -26,8 +26,8 @@ model cau_hoi {
   tra_loi      String?
   ngay_hoi     DateTime?  @default(now())
   ngay_tra_loi DateTime?
-  nguoi_dung   nguoi_dung @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
   san_pham     san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
+  nguoi_dung   nguoi_dung @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model chi_tiet_don_hang {
@@ -38,9 +38,9 @@ model chi_tiet_don_hang {
   don_gia      Float
   thanh_tien   Float
   ma_nguoi_ban Int
-  nguoi_dung   nguoi_dung @relation(fields: [ma_nguoi_ban], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
-  san_pham     san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
   don_hang     don_hang   @relation(fields: [ma_don_hang], references: [ma_don_hang], onDelete: NoAction, onUpdate: NoAction)
+  san_pham     san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
+  nguoi_dung   nguoi_dung @relation(fields: [ma_nguoi_ban], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model chi_tiet_gio_hang {
@@ -49,8 +49,8 @@ model chi_tiet_gio_hang {
   ma_san_pham Int
   so_luong    Int
   ngay_tao    DateTime? @default(now())
-  san_pham    san_pham  @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
   gio_hang    gio_hang  @relation(fields: [ma_gio_hang], references: [ma_gio_hang], onDelete: NoAction, onUpdate: NoAction)
+  san_pham    san_pham  @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model danh_gia {
@@ -60,8 +60,8 @@ model danh_gia {
   so_sao        Int
   noi_dung      String?
   ngay_danh_gia DateTime?  @default(now())
-  nguoi_dung    nguoi_dung @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
   san_pham      san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
+  nguoi_dung    nguoi_dung @relation(fields: [ma_nguoi_mua], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model danh_muc {
@@ -94,16 +94,16 @@ model gio_hang {
 }
 
 model nguoi_dung {
-  ma_nguoi_dung          Int       @id @default(autoincrement())
+  ma_nguoi_dung          Int                      @id @default(autoincrement())
   ho_ten                 String
-  email                  String    @unique
+  email                  String                   @unique
   mat_khau               String
-  vai_tro                String?   @default("Khach")
+  vai_tro                String?                  @default("Khach")
   dia_chi                String?
   so_dien_thoai          String?
-  trang_thai             Boolean?  @default(true)
-  ngay_tao               DateTime? @default(now())
-  ngay_cap_nhat          DateTime? @default(now())
+  trang_thai             Boolean?                 @default(true)
+  ngay_tao               DateTime?                @default(now())
+  ngay_cap_nhat          DateTime?                @default(now())
   resetPasswordToken     String?
   resetPasswordExpire    DateTime?
   avatar                 String?
@@ -124,8 +124,8 @@ model nhat_ky_duyet_san_pham {
   ly_do         String?
   thuc_hien_boi Int
   thuc_hien_luc DateTime?  @default(now())
-  nguoi_dung    nguoi_dung @relation(fields: [thuc_hien_boi], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
   san_pham      san_pham   @relation(fields: [ma_san_pham], references: [ma_san_pham], onDelete: NoAction, onUpdate: NoAction)
+  nguoi_dung    nguoi_dung @relation(fields: [thuc_hien_boi], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model san_pham {
@@ -145,8 +145,8 @@ model san_pham {
   chi_tiet_gio_hang      chi_tiet_gio_hang[]
   danh_gia               danh_gia[]
   nhat_ky_duyet_san_pham nhat_ky_duyet_san_pham[]
-  danh_muc               danh_muc                 @relation(fields: [ma_danh_muc], references: [ma_danh_muc], onDelete: NoAction, onUpdate: NoAction)
   nguoi_dung             nguoi_dung               @relation(fields: [ma_nguoi_ban], references: [ma_nguoi_dung], onDelete: NoAction, onUpdate: NoAction)
+  danh_muc               danh_muc                 @relation(fields: [ma_danh_muc], references: [ma_danh_muc], onDelete: NoAction, onUpdate: NoAction)
   san_pham_anh           san_pham_anh[]
 }
 
